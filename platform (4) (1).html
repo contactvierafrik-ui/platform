@@ -1,0 +1,3089 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IA Académie — Plateforme de Formation</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400&family=Outfit:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --gold: #C9A84C;
+  --gold-light: #E8C97A;
+  --gold-dim: #8B6A28;
+  --obsidian: #050505;
+  --deep: #08080F;
+  --surface: #0F0F18;
+  --surface2: #16161F;
+  --surface3: #1E1E2A;
+  --surface4: #252535;
+  --text: #F0EDE8;
+  --text-dim: #9A9280;
+  --text-muted: #5A5550;
+  --green: #2ECC71;
+  --red: #E74C3C;
+  --accent: #6B4EFF;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Outfit', sans-serif;
+  background: var(--obsidian);
+  color: var(--text);
+  min-height: 100vh;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.025'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.5;
+}
+
+/* === SIDEBAR === */
+.sidebar {
+  position: fixed;
+  left: 0; top: 0; bottom: 0;
+  width: 280px;
+  background: var(--deep);
+  border-right: 1px solid rgba(201,168,76,0.08);
+  display: flex;
+  flex-direction: column;
+  z-index: 50;
+  transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.sidebar-logo {
+  padding: 28px 24px 20px;
+  border-bottom: 1px solid rgba(201,168,76,0.08);
+}
+.logo-text {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.15rem;
+  color: var(--gold);
+  letter-spacing: 0.15em;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+.logo-sub {
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  margin-top: 4px;
+}
+
+.sidebar-progress {
+  padding: 20px 24px;
+  border-bottom: 1px solid rgba(201,168,76,0.06);
+}
+.progress-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.72rem;
+  color: var(--text-dim);
+  letter-spacing: 0.08em;
+  margin-bottom: 10px;
+  text-transform: uppercase;
+}
+.progress-bar {
+  height: 3px;
+  background: var(--surface3);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--gold-dim), var(--gold));
+  border-radius: 2px;
+  transition: width 0.8s cubic-bezier(0.23, 1, 0.32, 1);
+  width: 0%;
+}
+
+.sidebar-nav {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px 0;
+}
+.sidebar-nav::-webkit-scrollbar { width: 3px; }
+.sidebar-nav::-webkit-scrollbar-track { background: transparent; }
+.sidebar-nav::-webkit-scrollbar-thumb { background: rgba(201,168,76,0.2); border-radius: 2px; }
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 24px;
+  cursor: pointer;
+  transition: all 0.25s;
+  border-left: 2px solid transparent;
+  position: relative;
+}
+.nav-item:hover { background: rgba(201,168,76,0.04); }
+.nav-item.active {
+  background: rgba(201,168,76,0.06);
+  border-left-color: var(--gold);
+}
+.nav-item.locked { opacity: 0.35; cursor: not-allowed; }
+.nav-item.completed .nav-item-dot { background: var(--green); }
+
+.nav-item-num {
+  width: 28px;
+  height: 28px;
+  border: 1px solid rgba(201,168,76,0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  color: var(--text-dim);
+  flex-shrink: 0;
+  font-family: 'Cormorant Garamond', serif;
+  transition: all 0.3s;
+}
+.nav-item.active .nav-item-num {
+  background: var(--gold);
+  color: var(--obsidian);
+  border-color: var(--gold);
+}
+.nav-item.completed .nav-item-num {
+  background: var(--green);
+  border-color: var(--green);
+  color: white;
+}
+
+.nav-item-text { flex: 1; }
+.nav-item-title {
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--text-dim);
+  line-height: 1.3;
+}
+.nav-item.active .nav-item-title { color: var(--text); }
+.nav-item-sub {
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.nav-lock {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}
+
+.sidebar-footer {
+  padding: 16px 24px;
+  border-top: 1px solid rgba(201,168,76,0.06);
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  letter-spacing: 0.08em;
+}
+
+/* === MAIN CONTENT === */
+.main {
+  margin-left: 280px;
+  min-height: 100vh;
+  position: relative;
+}
+
+/* === TOPBAR === */
+.topbar {
+  position: sticky;
+  top: 0;
+  background: rgba(5,5,5,0.9);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(201,168,76,0.08);
+  padding: 16px 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  z-index: 40;
+}
+.topbar-breadcrumb {
+  font-size: 0.78rem;
+  color: var(--text-dim);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.topbar-breadcrumb span:last-child { color: var(--text); }
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+.topbar-score {
+  font-size: 0.78rem;
+  color: var(--gold);
+  border: 1px solid rgba(201,168,76,0.2);
+  padding: 6px 14px;
+  letter-spacing: 0.1em;
+}
+.menu-toggle {
+  display: none;
+  background: none;
+  border: none;
+  color: var(--text);
+  cursor: pointer;
+  font-size: 1.2rem;
+  padding: 4px;
+}
+
+/* === CONTENT VIEW === */
+.view {
+  display: none;
+  padding: 60px 48px;
+  max-width: 900px;
+  margin: 0 auto;
+  animation: fadeInView 0.4s ease;
+}
+.view.active { display: block; }
+@keyframes fadeInView {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* === DASHBOARD === */
+.dash-welcome {
+  margin-bottom: 48px;
+}
+.dash-eyebrow {
+  font-size: 0.72rem;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 12px;
+}
+.dash-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(2rem, 4vw, 3.2rem);
+  font-weight: 300;
+  line-height: 1.15;
+  margin-bottom: 12px;
+}
+.dash-title em { font-style: italic; color: var(--gold); }
+.dash-sub {
+  font-size: 0.95rem;
+  color: var(--text-dim);
+  line-height: 1.7;
+  font-weight: 300;
+  max-width: 540px;
+}
+
+.dash-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 2px;
+  margin-bottom: 48px;
+}
+.dash-stat {
+  background: var(--surface);
+  padding: 24px;
+  text-align: center;
+  border-bottom: 2px solid transparent;
+  transition: border-color 0.3s;
+}
+.dash-stat:hover { border-bottom-color: var(--gold); }
+.dash-stat-num {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: var(--gold);
+}
+.dash-stat-label {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  margin-top: 4px;
+}
+
+.dash-modules-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+.dash-module-card {
+  background: var(--surface);
+  padding: 28px;
+  cursor: pointer;
+  border: 1px solid rgba(255,255,255,0.04);
+  transition: all 0.3s;
+  position: relative;
+  overflow: hidden;
+}
+.dash-module-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--gold), transparent);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.4s;
+}
+.dash-module-card:hover { background: var(--surface2); transform: translateY(-2px); }
+.dash-module-card:hover::before { transform: scaleX(1); }
+.dash-module-card.completed { border-color: rgba(46,204,113,0.15); }
+.dash-module-card.locked { opacity: 0.4; cursor: not-allowed; }
+
+.dash-card-num {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 0.85rem;
+  color: var(--gold-dim);
+  letter-spacing: 0.15em;
+  margin-bottom: 10px;
+}
+.dash-card-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.15rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+  line-height: 1.3;
+}
+.dash-card-desc {
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  font-weight: 300;
+  margin-bottom: 16px;
+  line-height: 1.5;
+}
+.dash-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.dash-card-status {
+  font-size: 0.68rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border: 1px solid;
+}
+.status-available { color: var(--gold); border-color: rgba(201,168,76,0.3); }
+.status-completed { color: var(--green); border-color: rgba(46,204,113,0.3); }
+.status-locked { color: var(--text-muted); border-color: rgba(255,255,255,0.1); }
+.dash-card-arrow { color: var(--text-muted); font-size: 1rem; }
+
+/* === MODULE VIEW === */
+.module-header {
+  margin-bottom: 48px;
+  padding-bottom: 32px;
+  border-bottom: 1px solid rgba(201,168,76,0.1);
+}
+.module-eyebrow {
+  font-size: 0.7rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.module-eyebrow::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: rgba(201,168,76,0.2);
+}
+.module-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(2rem, 4vw, 3rem);
+  font-weight: 300;
+  line-height: 1.15;
+  margin-bottom: 16px;
+}
+.module-title em { font-style: italic; color: var(--gold); }
+.module-intro {
+  font-size: 1rem;
+  color: var(--text-dim);
+  line-height: 1.8;
+  font-weight: 300;
+  max-width: 680px;
+}
+
+/* Audio Player */
+/* ========= AUDIO PLAYER SYSTÈME COMPLET ========= */
+.audio-section { margin: 40px 0; }
+
+.audio-section-title {
+  font-size: 0.72rem;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 16px;
+}
+.audio-players { display: flex; flex-direction: column; gap: 14px; }
+
+/* Carte lecteur */
+.audio-card {
+  background: var(--surface2);
+  border: 1px solid rgba(201,168,76,0.12);
+  padding: 18px 20px 14px;
+  transition: border-color 0.3s;
+  position: relative;
+  overflow: hidden;
+}
+.audio-card::before {
+  content:'';
+  position:absolute;
+  top:0;left:0;right:0;height:2px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  opacity:0;
+  transition: opacity 0.3s;
+}
+.audio-card.playing { border-color: rgba(201,168,76,0.4); }
+.audio-card.playing::before { opacity:1; }
+
+/* Ligne top : bouton + info */
+.audio-top {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 12px;
+}
+
+/* Bouton play/pause */
+.ap-btn {
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--gold-light), var(--gold));
+  border: none;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1rem;
+  color: var(--obsidian);
+  flex-shrink: 0;
+  transition: transform 0.2s, box-shadow 0.2s;
+  box-shadow: 0 4px 16px rgba(201,168,76,0.2);
+}
+.ap-btn:hover { transform: scale(1.08); box-shadow: 0 6px 24px rgba(201,168,76,0.35); }
+.ap-btn:active { transform: scale(0.96); }
+
+/* Info */
+.ap-info { flex:1; min-width:0; }
+.ap-title { font-size: 0.88rem; font-weight: 500; margin-bottom: 3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.ap-meta { font-size: 0.7rem; color: var(--text-muted); }
+
+/* Timer */
+.ap-timer {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  font-family: 'Courier New', monospace;
+  letter-spacing: 0.05em;
+  flex-shrink: 0;
+}
+
+/* Barre de progression */
+.ap-bar-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.ap-bar {
+  flex:1;
+  height: 4px;
+  background: var(--surface3);
+  border-radius: 2px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+.ap-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--gold-dim), var(--gold-light));
+  border-radius: 2px;
+  width: 0%;
+  transition: width 0.15s linear;
+  pointer-events: none;
+}
+.ap-bar:hover .ap-bar-fill { background: linear-gradient(90deg, var(--gold), var(--gold-light)); }
+
+/* Volume */
+.ap-vol {
+  width: 64px;
+  height: 4px;
+  background: var(--surface3);
+  border-radius: 2px;
+  cursor: pointer;
+  flex-shrink: 0;
+  position: relative;
+  overflow: hidden;
+}
+.ap-vol-fill {
+  height: 100%;
+  background: rgba(201,168,76,0.4);
+  border-radius: 2px;
+  width: 80%;
+  pointer-events: none;
+}
+
+/* Badge "Pas de fichier" */
+.ap-no-file {
+  font-size: 0.7rem;
+  color: rgba(201,168,76,0.5);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+}
+.ap-no-file a {
+  color: var(--gold);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/* Pulse animation quand lecture */
+@keyframes pulse-gold {
+  0%,100% { box-shadow: 0 4px 16px rgba(201,168,76,0.2); }
+  50%      { box-shadow: 0 4px 28px rgba(201,168,76,0.5); }
+}
+.ap-btn.active { animation: pulse-gold 1.8s ease-in-out infinite; }
+
+/* Lesson content */
+.lesson-block {
+  margin: 32px 0;
+}
+.lesson-heading {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.6rem;
+  font-weight: 600;
+  margin-bottom: 16px;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.lesson-heading::before {
+  content: '';
+  width: 3px;
+  height: 24px;
+  background: var(--gold);
+  flex-shrink: 0;
+}
+.lesson-text {
+  font-size: 0.95rem;
+  color: var(--text-dim);
+  line-height: 1.85;
+  font-weight: 300;
+}
+.lesson-text p { margin-bottom: 16px; }
+.lesson-text strong { color: var(--text); font-weight: 500; }
+
+.lesson-list {
+  margin: 16px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.lesson-list-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  font-size: 0.92rem;
+  color: var(--text-dim);
+  font-weight: 300;
+  line-height: 1.6;
+}
+.lesson-list-item::before {
+  content: '◆';
+  color: var(--gold);
+  font-size: 0.45rem;
+  margin-top: 7px;
+  flex-shrink: 0;
+}
+
+.highlight-box {
+  background: rgba(201,168,76,0.05);
+  border: 1px solid rgba(201,168,76,0.2);
+  border-left: 3px solid var(--gold);
+  padding: 20px 24px;
+  margin: 24px 0;
+  font-size: 0.9rem;
+  color: var(--text-dim);
+  line-height: 1.7;
+  font-weight: 300;
+}
+.highlight-box strong { color: var(--gold); }
+
+.tool-card {
+  background: var(--surface2);
+  border: 1px solid rgba(255,255,255,0.05);
+  padding: 20px 24px;
+  margin: 10px 0;
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  transition: border-color 0.3s;
+}
+.tool-card:hover { border-color: rgba(201,168,76,0.2); }
+.tool-emoji { font-size: 1.5rem; flex-shrink: 0; }
+.tool-name { font-size: 0.95rem; font-weight: 600; margin-bottom: 4px; }
+.tool-desc { font-size: 0.83rem; color: var(--text-dim); font-weight: 300; line-height: 1.5; }
+.tool-tag {
+  display: inline-block;
+  font-size: 0.65rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--gold);
+  border: 1px solid rgba(201,168,76,0.2);
+  padding: 2px 8px;
+  margin-top: 6px;
+}
+
+/* Interactive Question */
+.interactive-block {
+  background: var(--surface);
+  border: 1px solid rgba(201,168,76,0.12);
+  padding: 32px;
+  margin: 32px 0;
+  position: relative;
+}
+.interactive-block::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, var(--gold), transparent);
+}
+.interactive-label {
+  font-size: 0.65rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 12px;
+}
+.interactive-question {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.35rem;
+  font-weight: 600;
+  margin-bottom: 20px;
+  line-height: 1.3;
+}
+.interactive-textarea {
+  width: 100%;
+  background: var(--surface2);
+  border: 1px solid rgba(255,255,255,0.06);
+  padding: 14px 16px;
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.9rem;
+  color: var(--text);
+  resize: vertical;
+  min-height: 90px;
+  outline: none;
+  transition: border-color 0.3s;
+  margin-bottom: 14px;
+}
+.interactive-textarea:focus { border-color: rgba(201,168,76,0.3); }
+.interactive-textarea::placeholder { color: var(--text-muted); }
+
+.options-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.option-btn {
+  background: var(--surface2);
+  border: 1px solid rgba(255,255,255,0.06);
+  padding: 12px 16px;
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.25s;
+}
+.option-btn:hover { border-color: rgba(201,168,76,0.3); color: var(--text); }
+.option-btn.selected { border-color: var(--gold); color: var(--gold); background: rgba(201,168,76,0.06); }
+
+/* Exercise block */
+.exercise-block {
+  background: linear-gradient(135deg, rgba(107,78,255,0.05), rgba(107,78,255,0.02));
+  border: 1px solid rgba(107,78,255,0.15);
+  padding: 32px;
+  margin: 32px 0;
+}
+.exercise-tag {
+  font-size: 0.65rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: #8B7AFF;
+  margin-bottom: 12px;
+}
+.exercise-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+.exercise-text {
+  font-size: 0.9rem;
+  color: var(--text-dim);
+  line-height: 1.7;
+  font-weight: 300;
+  margin-bottom: 16px;
+}
+.exercise-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.exercise-step {
+  display: flex;
+  gap: 12px;
+  font-size: 0.88rem;
+  color: var(--text-dim);
+  align-items: flex-start;
+}
+.step-num {
+  width: 22px;
+  height: 22px;
+  background: rgba(107,78,255,0.2);
+  border: 1px solid rgba(107,78,255,0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.68rem;
+  color: #8B7AFF;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+/* Buttons */
+.btn-validate {
+  background: linear-gradient(135deg, var(--gold-light), var(--gold));
+  color: var(--obsidian);
+  padding: 12px 28px;
+  font-weight: 700;
+  font-size: 0.82rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+.btn-validate:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(201,168,76,0.3); }
+
+.btn-next {
+  background: var(--surface3);
+  color: var(--text);
+  padding: 16px 40px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  border: 1px solid rgba(255,255,255,0.08);
+  cursor: pointer;
+  transition: all 0.3s;
+}
+.btn-next:hover { background: rgba(201,168,76,0.1); border-color: rgba(201,168,76,0.3); color: var(--gold); }
+
+.module-nav-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 60px;
+  padding-top: 32px;
+  border-top: 1px solid rgba(255,255,255,0.05);
+}
+.btn-complete-module {
+  background: linear-gradient(135deg, var(--gold-light), var(--gold));
+  color: var(--obsidian);
+  padding: 16px 40px;
+  font-weight: 700;
+  font-size: 0.85rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  border: none;
+  cursor: pointer;
+  transition: all 0.4s;
+}
+.btn-complete-module:hover { transform: translateY(-2px); box-shadow: 0 12px 40px rgba(201,168,76,0.35); }
+
+/* === EXAMEN === */
+.exam-header {
+  text-align: center;
+  margin-bottom: 48px;
+  padding: 48px 32px;
+  background: var(--surface);
+  border: 1px solid rgba(201,168,76,0.15);
+  position: relative;
+  overflow: hidden;
+}
+.exam-header::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+}
+.exam-icon { font-size: 3rem; margin-bottom: 16px; display: block; }
+.exam-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 2.5rem;
+  font-weight: 300;
+  margin-bottom: 12px;
+}
+.exam-title em { font-style: italic; color: var(--gold); }
+.exam-desc { font-size: 0.92rem; color: var(--text-dim); line-height: 1.7; font-weight: 300; }
+
+.exam-question {
+  background: var(--surface);
+  border: 1px solid rgba(255,255,255,0.06);
+  padding: 32px;
+  margin-bottom: 16px;
+}
+.question-num {
+  font-size: 0.68rem;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 12px;
+}
+.question-text {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 20px;
+  line-height: 1.4;
+}
+.exam-options {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.exam-option {
+  background: var(--surface2);
+  border: 1px solid rgba(255,255,255,0.06);
+  padding: 14px 18px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: var(--text-dim);
+  text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: all 0.25s;
+  font-family: 'Outfit', sans-serif;
+}
+.exam-option:hover { border-color: rgba(201,168,76,0.3); color: var(--text); }
+.exam-option.selected { border-color: var(--gold); color: var(--text); background: rgba(201,168,76,0.06); }
+.exam-option.correct { border-color: var(--green); color: var(--green); background: rgba(46,204,113,0.06); }
+.exam-option.wrong { border-color: var(--red); color: var(--red); background: rgba(231,76,60,0.06); }
+.option-letter {
+  width: 26px; height: 26px;
+  border: 1px solid rgba(255,255,255,0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.72rem;
+  font-weight: 600;
+  flex-shrink: 0;
+  transition: all 0.25s;
+}
+.exam-option.selected .option-letter { background: var(--gold); border-color: var(--gold); color: var(--obsidian); }
+
+.exam-actions {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 40px;
+  flex-wrap: wrap;
+}
+
+.exam-result {
+  display: none;
+  text-align: center;
+  padding: 60px 40px;
+}
+.exam-result.show { display: block; }
+.result-icon { font-size: 4rem; margin-bottom: 20px; display: block; }
+.result-score {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 5rem;
+  font-weight: 700;
+  color: var(--gold);
+  line-height: 1;
+  margin-bottom: 8px;
+}
+.result-text {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.8rem;
+  font-weight: 300;
+  margin-bottom: 16px;
+}
+.result-desc { font-size: 0.95rem; color: var(--text-dim); max-width: 480px; margin: 0 auto 40px; line-height: 1.7; font-weight: 300; }
+
+/* Name form */
+.name-form {
+  max-width: 480px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.name-form input {
+  background: var(--surface2);
+  border: 1px solid rgba(201,168,76,0.2);
+  padding: 14px 18px;
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.95rem;
+  color: var(--text);
+  outline: none;
+  transition: border-color 0.3s;
+}
+.name-form input:focus { border-color: var(--gold); }
+.name-form input::placeholder { color: var(--text-muted); }
+.btn-generate {
+  background: linear-gradient(135deg, var(--gold-light), var(--gold));
+  color: var(--obsidian);
+  padding: 16px;
+  font-weight: 700;
+  font-size: 0.9rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+.btn-generate:hover { box-shadow: 0 12px 40px rgba(201,168,76,0.35); }
+
+/* === DIPLÔME === */
+.diploma-view {
+  display: none;
+  padding: 60px 48px;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+.diploma-view.active { display: block; }
+
+.diploma-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-bottom: 40px;
+  flex-wrap: wrap;
+}
+.btn-print {
+  background: var(--surface2);
+  color: var(--text);
+  border: 1px solid rgba(255,255,255,0.1);
+  padding: 12px 28px;
+  font-size: 0.82rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+.btn-print:hover { border-color: var(--gold); color: var(--gold); }
+.btn-download {
+  background: linear-gradient(135deg, var(--gold-light), var(--gold));
+  color: var(--obsidian);
+  border: none;
+  padding: 12px 28px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+.btn-download:hover { box-shadow: 0 8px 30px rgba(201,168,76,0.3); }
+
+/* The Diploma */
+.diploma-wrapper {
+  display: flex;
+  justify-content: center;
+}
+
+#diplomaCanvas {
+  width: 100%;
+  max-width: 800px;
+  border: 1px solid rgba(201,168,76,0.2);
+  box-shadow: 0 40px 100px rgba(0,0,0,0.6), 0 0 60px rgba(201,168,76,0.05);
+}
+
+/* NOTIFICATION */
+.notification {
+  position: fixed;
+  bottom: 32px;
+  right: 32px;
+  background: var(--surface2);
+  border: 1px solid rgba(201,168,76,0.25);
+  border-left: 3px solid var(--gold);
+  padding: 16px 24px;
+  font-size: 0.88rem;
+  color: var(--text);
+  z-index: 1000;
+  transform: translateX(120%);
+  transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+  max-width: 320px;
+}
+.notification.show { transform: translateX(0); }
+
+/* OVERLAY for mobile */
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  z-index: 49;
+}
+
+/* RESPONSIVE */
+@media (max-width: 900px) {
+  .sidebar {
+    transform: translateX(-100%);
+  }
+  .sidebar.open {
+    transform: translateX(0);
+  }
+  .sidebar-overlay {
+    display: block;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+  }
+  .sidebar-overlay.show {
+    opacity: 1;
+    pointer-events: all;
+  }
+  .main { margin-left: 0; }
+  .menu-toggle { display: flex; }
+  .topbar { padding: 14px 20px; }
+  .view { padding: 32px 20px; }
+  .diploma-view { padding: 32px 20px; }
+  .dash-stats { grid-template-columns: repeat(2, 1fr); }
+  .dash-modules-grid { grid-template-columns: 1fr; }
+  .options-grid { grid-template-columns: 1fr; }
+}
+
+@media print {
+  .sidebar, .topbar, .diploma-actions, .notification { display: none !important; }
+  .main { margin-left: 0 !important; }
+  .diploma-view { display: block !important; padding: 0 !important; }
+  body { background: white; }
+}
+</style>
+</head>
+<body>
+
+<!-- ACCESS GATE — vérifié avant tout -->
+<script>
+(function() {
+  const VALID = ['IA2025', 'AKOUA2026'];
+
+  // Vérifie sessionStorage (vient de index.html) OU localStorage (déjà connecté)
+  const sessionCode = sessionStorage.getItem('ia_access');
+  const localCode   = localStorage.getItem('ia_access');
+  const code = sessionCode || localCode;
+
+  if (!code || !VALID.includes(code.toUpperCase())) {
+    // Redirige vers la landing page seulement si index.html existe
+    // Évite la boucle infinie sur accès direct
+    if (document.referrer.includes('index.html') || sessionCode) {
+      window.location.replace('index.html');
+    }
+    // Accès direct sans referrer = on laisse passer (test local / Netlify preview)
+  }
+
+  // Sauvegarde en localStorage pour persistance entre onglets
+  if (code) localStorage.setItem('ia_access', code);
+
+  // Admin bypass — tous les modules débloqués
+  if (code && code.toUpperCase() === 'AKOUA2026') {
+    localStorage.setItem('ia_admin', '1');
+    localStorage.setItem('ia_completed', JSON.stringify([1,2,3,4,5,6,7]));
+  }
+})();
+</script>
+
+<!-- Sidebar Overlay -->
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-text">IA Académie</div>
+    <div class="logo-sub">Formation Premium</div>
+  </div>
+
+  <div class="sidebar-progress">
+    <div class="progress-label">
+      <span>Progression</span>
+      <span id="progressPercent">0%</span>
+    </div>
+    <div class="progress-bar">
+      <div class="progress-fill" id="progressFill"></div>
+    </div>
+  </div>
+
+  <nav class="sidebar-nav">
+    <div class="nav-item active" id="nav-dashboard" onclick="showView('dashboard')">
+      <div class="nav-item-num">⌂</div>
+      <div class="nav-item-text">
+        <div class="nav-item-title">Tableau de bord</div>
+        <div class="nav-item-sub">Vue d'ensemble</div>
+      </div>
+    </div>
+    <div class="nav-item" id="nav-m1" onclick="showView('module1')">
+      <div class="nav-item-num">1</div>
+      <div class="nav-item-text">
+        <div class="nav-item-title">Comprendre l'IA</div>
+        <div class="nav-item-sub">Module 1</div>
+      </div>
+    </div>
+    <div class="nav-item locked" id="nav-m2" onclick="showLockedMsg()">
+      <div class="nav-item-num">2</div>
+      <div class="nav-item-text">
+        <div class="nav-item-title">Dominer les Outils IA</div>
+        <div class="nav-item-sub">Module 2</div>
+      </div>
+      <div class="nav-lock">🔒</div>
+    </div>
+    <div class="nav-item locked" id="nav-m3" onclick="showLockedMsg()">
+      <div class="nav-item-num">3</div>
+      <div class="nav-item-text">
+        <div class="nav-item-title">Créer un eBook</div>
+        <div class="nav-item-sub">Module 3</div>
+      </div>
+      <div class="nav-lock">🔒</div>
+    </div>
+    <div class="nav-item locked" id="nav-m4" onclick="showLockedMsg()">
+      <div class="nav-item-num">4</div>
+      <div class="nav-item-text">
+        <div class="nav-item-title">Produit Digital</div>
+        <div class="nav-item-sub">Module 4</div>
+      </div>
+      <div class="nav-lock">🔒</div>
+    </div>
+    <div class="nav-item locked" id="nav-m5" onclick="showLockedMsg()">
+      <div class="nav-item-num">5</div>
+      <div class="nav-item-text">
+        <div class="nav-item-title">Créer ta Plateforme</div>
+        <div class="nav-item-sub">Module 5</div>
+      </div>
+      <div class="nav-lock">🔒</div>
+    </div>
+    <div class="nav-item locked" id="nav-m6" onclick="showLockedMsg()">
+      <div class="nav-item-num">6</div>
+      <div class="nav-item-text">
+        <div class="nav-item-title">Trouver des Clients</div>
+        <div class="nav-item-sub">Module 6</div>
+      </div>
+      <div class="nav-lock">🔒</div>
+    </div>
+    <div class="nav-item locked" id="nav-exam" onclick="showLockedMsg()">
+      <div class="nav-item-num">★</div>
+      <div class="nav-item-text">
+        <div class="nav-item-title">Examen Final</div>
+        <div class="nav-item-sub">Module 7</div>
+      </div>
+      <div class="nav-lock">🔒</div>
+    </div>
+  </nav>
+
+  <div class="sidebar-footer">Académie Digitale · Accès Premium</div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <div style="display:flex;align-items:center;gap:12px;">
+      <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+      <div class="topbar-breadcrumb">
+        <span>IA Académie</span>
+        <span>›</span>
+        <span id="breadcrumbCurrent">Tableau de bord</span>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <div class="topbar-score" id="topbarScore">Module 0/7</div>
+    </div>
+  </header>
+
+  <!-- === DASHBOARD === -->
+  <div class="view active" id="view-dashboard">
+    <div class="dash-welcome">
+      <div class="dash-eyebrow">⬥ Bienvenue dans ton académie</div>
+      <h1 class="dash-title">Prêt à <em>dominer</em><br>l'Intelligence Artificielle ?</h1>
+      <p class="dash-sub">
+        Tu as accès à 7 modules complets, 21+ audios de coaching et un examen final pour obtenir ton certificat premium. Commence par le Module 1 et progresse à ton rythme.
+      </p>
+    </div>
+
+    <div class="dash-stats">
+      <div class="dash-stat">
+        <div class="dash-stat-num" id="statModules">0/7</div>
+        <div class="dash-stat-label">Modules terminés</div>
+      </div>
+      <div class="dash-stat">
+        <div class="dash-stat-num">21+</div>
+        <div class="dash-stat-label">Leçons audio</div>
+      </div>
+      <div class="dash-stat">
+        <div class="dash-stat-num" id="statProgress">0%</div>
+        <div class="dash-stat-label">Progression</div>
+      </div>
+      <div class="dash-stat">
+        <div class="dash-stat-num">∞</div>
+        <div class="dash-stat-label">Accès à vie</div>
+      </div>
+    </div>
+
+    <div class="dash-modules-grid" id="dashModulesGrid">
+      <!-- dynamically rendered -->
+    </div>
+  </div>
+
+  <!-- === MODULE 1 === -->
+  <div class="view" id="view-module1">
+    <div class="module-header">
+      <div class="module-eyebrow">Module 01 · Formation IA</div>
+      <h2 class="module-title">Comprendre<br><em>l'Intelligence Artificielle</em></h2>
+      <p class="module-intro">
+        Ce module te donne une vision claire et complète de ce qu'est l'intelligence artificielle, pourquoi elle transforme le monde en ce moment même, et comment tu peux l'utiliser intelligemment dès aujourd'hui — même en partant de zéro.
+      </p>
+    </div>
+
+    <!-- AUDIOS M1 -->
+    <div class="audio-section">
+      <div class="audio-section-title">⬥ Leçons Audio — Écoute & Apprends</div>
+      <div class="audio-players">
+        <div class="audio-card" id="card-m1-1">
+          <div class="audio-top">
+            <button class="ap-btn" id="btn-m1-1" onclick="apToggle('m1-1')">▶</button>
+            <div class="ap-info">
+              <div class="ap-title">🎙 Leçon 1.1 — Qu'est-ce que vraiment l'IA ?</div>
+              <div class="ap-meta">Introduction complète · ~8 min</div>
+            </div>
+            <div class="ap-timer" id="timer-m1-1">0:00</div>
+          </div>
+          <div class="ap-bar-wrap">
+            <div class="ap-bar" id="bar-m1-1" onclick="apSeek(event, 'm1-1')">
+              <div class="ap-bar-fill" id="fill-m1-1"></div>
+            </div>
+            <div class="ap-vol" id="vol-m1-1" onclick="apVol(event, 'm1-1')">
+              <div class="ap-vol-fill" id="volfill-m1-1"></div>
+            </div>
+          </div>
+          <audio id="audio-m1-1" preload="none">
+            <source src="audio/m1-1.mp3" type="audio/mpeg">
+          </audio>
+          <div class="ap-no-file" id="nofile-m1-1" style="display:none">
+            ⚠ Fichier audio non trouvé —
+            <a onclick="apSpeech('m1-1', &quot;L intelligence artificielle est la capacité d une machine à imiter des fonctions cognitives humaines. Aujourd hui cette technologie est accessible à tous. Si tu peux écrire un message, tu peux utiliser l IA.&quot;)">Écouter avec synthèse vocale ▶</a>
+          </div>
+        </div>
+        <div class="audio-card" id="card-m1-2">
+          <div class="audio-top">
+            <button class="ap-btn" id="btn-m1-2" onclick="apToggle('m1-2')">▶</button>
+            <div class="ap-info">
+              <div class="ap-title">🎙 Leçon 1.2 — Pourquoi l'IA est une opportunité historique</div>
+              <div class="ap-meta">Analyse et vision · ~10 min</div>
+            </div>
+            <div class="ap-timer" id="timer-m1-2">0:00</div>
+          </div>
+          <div class="ap-bar-wrap">
+            <div class="ap-bar" id="bar-m1-2" onclick="apSeek(event, 'm1-2')">
+              <div class="ap-bar-fill" id="fill-m1-2"></div>
+            </div>
+            <div class="ap-vol" id="vol-m1-2" onclick="apVol(event, 'm1-2')">
+              <div class="ap-vol-fill" id="volfill-m1-2"></div>
+            </div>
+          </div>
+          <audio id="audio-m1-2" preload="none">
+            <source src="audio/m1-2.mp3" type="audio/mpeg">
+          </audio>
+          <div class="ap-no-file" id="nofile-m1-2" style="display:none">
+            ⚠ Fichier audio non trouvé —
+            <a onclick="apSpeech('m1-2', &quot;Nous vivons un moment comparable à l invention d Internet. Ceux qui ont compris Internet tôt ont bâti des empires. En Afrique francophone, très peu de personnes maîtrisent ces outils. La compétition est quasi nulle. C est ton moment.&quot;)">Écouter avec synthèse vocale ▶</a>
+          </div>
+        </div>
+        <div class="audio-card" id="card-m1-3">
+          <div class="audio-top">
+            <button class="ap-btn" id="btn-m1-3" onclick="apToggle('m1-3')">▶</button>
+            <div class="ap-info">
+              <div class="ap-title">🎙 Leçon 1.3 — La mentalité pour dominer l'IA</div>
+              <div class="ap-meta">Mindset et stratégie · ~7 min</div>
+            </div>
+            <div class="ap-timer" id="timer-m1-3">0:00</div>
+          </div>
+          <div class="ap-bar-wrap">
+            <div class="ap-bar" id="bar-m1-3" onclick="apSeek(event, 'm1-3')">
+              <div class="ap-bar-fill" id="fill-m1-3"></div>
+            </div>
+            <div class="ap-vol" id="vol-m1-3" onclick="apVol(event, 'm1-3')">
+              <div class="ap-vol-fill" id="volfill-m1-3"></div>
+            </div>
+          </div>
+          <audio id="audio-m1-3" preload="none">
+            <source src="audio/m1-3.mp3" type="audio/mpeg">
+          </audio>
+          <div class="ap-no-file" id="nofile-m1-3" style="display:none">
+            ⚠ Fichier audio non trouvé —
+            <a onclick="apSpeech('m1-3', &quot;Tu n es pas là pour utiliser l IA. Tu es là pour lui donner des ordres et obtenir des résultats précis. L IA est ton assistant, pas ton patron. Plus tu la guides avec précision, plus les résultats sont extraordinaires.&quot;)">Écouter avec synthèse vocale ▶</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONTENT M1 -->
+    <div class="lesson-block">
+      <h3 class="lesson-heading">Qu'est-ce que l'Intelligence Artificielle ?</h3>
+      <div class="lesson-text">
+        <p>L'intelligence artificielle, c'est simplement la capacité d'une machine à imiter des fonctions cognitives humaines : apprendre, raisonner, résoudre des problèmes, comprendre le langage naturel et percevoir son environnement.</p>
+        <p>Ce qui change aujourd'hui, c'est que cette technologie est devenue <strong>accessible à tous</strong>. Pendant des décennies, l'IA était réservée aux laboratoires de recherche et aux grandes entreprises technologiques. En 2024-2025, elle est dans ton téléphone, dans ton navigateur, disponible gratuitement ou à très faible coût.</p>
+      </div>
+
+      <div class="highlight-box">
+        <strong>💡 Point clé :</strong> L'IA ne remplace pas les humains qui savent l'utiliser. Elle remplace ceux qui refusent de l'apprendre. La question n'est pas si tu dois apprendre l'IA — c'est QUAND tu commences.
+      </div>
+    </div>
+
+    <div class="lesson-block">
+      <h3 class="lesson-heading">Pourquoi c'est une opportunité historique</h3>
+      <div class="lesson-text">
+        <p>Nous vivons un moment comparable à l'invention d'Internet dans les années 90. Ceux qui ont compris Internet tôt ont bâti des empires. Ceux qui ont attendu ont raté la vague.</p>
+        <p>Aujourd'hui, l'IA crée les mêmes opportunités. Voici pourquoi maintenant est le meilleur moment :</p>
+      </div>
+      <div class="lesson-list">
+        <div class="lesson-list-item">Les outils IA sont accessibles et souvent <strong>gratuits ou très abordables</strong></div>
+        <div class="lesson-list-item">La demande en <strong>services liés à l'IA</strong> explose dans toutes les industries</div>
+        <div class="lesson-list-item">En Afrique francophone, <strong>très peu de personnes</strong> maîtrisent ces outils — la compétition est quasi nulle</div>
+        <div class="lesson-list-item">Tu peux créer des produits digitaux <strong>10 fois plus vite</strong> qu'avant avec l'IA</div>
+        <div class="lesson-list-item">Les entreprises cherchent <strong>désespérément</strong> des personnes capables de les aider avec l'IA</div>
+      </div>
+    </div>
+
+    <div class="lesson-block">
+      <h3 class="lesson-heading">Les erreurs des débutants à éviter</h3>
+      <div class="lesson-list">
+        <div class="lesson-list-item"><strong>Erreur #1 — Penser que c'est trop complexe :</strong> L'IA moderne est conçue pour tout le monde. Si tu peux écrire un message WhatsApp, tu peux utiliser l'IA.</div>
+        <div class="lesson-list-item"><strong>Erreur #2 — Chercher la perfection :</strong> L'IA génère un premier draft. Ton rôle est de guider, corriger et personnaliser. Commence imparfait, améliore en chemin.</div>
+        <div class="lesson-list-item"><strong>Erreur #3 — Utiliser un seul outil :</strong> Il existe des dizaines d'outils spécialisés. Apprendre à choisir le bon outil pour chaque tâche est ce qui te rend vraiment efficace.</div>
+        <div class="lesson-list-item"><strong>Erreur #4 — Attendre d'être "prêt" :</strong> Il n'y a pas de moment parfait. La seule façon d'apprendre est de commencer maintenant, même maladroitement.</div>
+      </div>
+    </div>
+
+    <div class="lesson-block">
+      <h3 class="lesson-heading">La mentalité pour dominer l'IA</h3>
+      <div class="highlight-box">
+        <strong>Le principe fondamental :</strong> Tu n'es pas là pour "utiliser" l'IA. Tu es là pour lui <strong>donner des ordres</strong> et obtenir des résultats précis. L'IA est ton assistant, pas ton patron. Plus tu la guides avec précision, plus les résultats sont extraordinaires.
+      </div>
+      <div class="lesson-list">
+        <div class="lesson-list-item">Pense en termes de <strong>résultats</strong>, pas en termes de processus</div>
+        <div class="lesson-list-item">Considère l'IA comme un <strong>collaborateur ultra-compétent</strong> qui ne dort jamais</div>
+        <div class="lesson-list-item">La valeur est dans <strong>ta vision et ta direction</strong> — l'IA exécute, toi tu crées</div>
+        <div class="lesson-list-item">Expérimente sans peur — aucune action avec l'IA n'est irréversible</div>
+      </div>
+    </div>
+
+    <!-- QUESTION INTERACTIVE M1 -->
+    <div class="interactive-block">
+      <div class="interactive-label">⬥ Réflexion personnelle</div>
+      <div class="interactive-question">Quel est TON objectif principal avec l'IA ? Qu'est-ce que tu veux créer ou accomplir avec ce que tu vas apprendre ?</div>
+      <textarea class="interactive-textarea" id="q1-goal" placeholder="Écris ta réponse ici... Par exemple : Je veux créer un eBook sur la nutrition et le vendre en ligne, ou Je veux proposer des services IA aux PME de ma ville..."></textarea>
+      <button class="btn-validate" onclick="saveAnswer('q1-goal', 'M1-objectif')">Enregistrer ma réponse →</button>
+    </div>
+
+    <!-- QUESTION INTERACTIVE 2 -->
+    <div class="interactive-block">
+      <div class="interactive-label">⬥ Question de positionnement</div>
+      <div class="interactive-question">Dans quel domaine veux-tu d'abord utiliser l'IA ?</div>
+      <div class="options-grid">
+        <button class="option-btn" onclick="selectOption(this, 'q1-domain')">📝 Créer du contenu & écrire</button>
+        <button class="option-btn" onclick="selectOption(this, 'q1-domain')">💼 Proposer des services</button>
+        <button class="option-btn" onclick="selectOption(this, 'q1-domain')">📚 Créer des produits digitaux</button>
+        <button class="option-btn" onclick="selectOption(this, 'q1-domain')">🚀 Monter mon business</button>
+      </div>
+      <button class="btn-validate" onclick="validateOption('q1-domain')">Valider mon choix →</button>
+    </div>
+
+    <!-- EXERCISE M1 -->
+    <div class="exercise-block">
+      <div class="exercise-tag">⬥ Exercice pratique — Module 1</div>
+      <div class="exercise-title">Ton Profil IA : Qui es-tu aujourd'hui ?</div>
+      <div class="exercise-text">
+        Avant de continuer, définis clairement où tu en es. Cette clarté va transformer ta façon d'apprendre et accélérer tes résultats.
+      </div>
+      <div class="exercise-steps">
+        <div class="exercise-step">
+          <div class="step-num">1</div>
+          <div>Note ton <strong>niveau actuel</strong> avec l'IA : débutant total / j'ai déjà essayé / utilisateur occasionnel</div>
+        </div>
+        <div class="exercise-step">
+          <div class="step-num">2</div>
+          <div>Identifie <strong>3 domaines</strong> de ta vie ou de ton activité où l'IA pourrait t'aider immédiatement</div>
+        </div>
+        <div class="exercise-step">
+          <div class="step-num">3</div>
+          <div>Définis une <strong>intention précise</strong> : dans 30 jours, je veux avoir accompli ceci grâce à l'IA...</div>
+        </div>
+      </div>
+      <textarea class="interactive-textarea" id="ex1" placeholder="Écris tes réponses ici : ton niveau, tes 3 domaines, et ton intention à 30 jours..."></textarea>
+      <button class="btn-validate" onclick="completeExercise('ex1', 1)">Exercice terminé ✓</button>
+    </div>
+
+    <div class="module-nav-footer">
+      <button class="btn-next" onclick="showView('dashboard')">← Retour au dashboard</button>
+      <button class="btn-complete-module" onclick="completeModule(1)">Terminer le Module 1 → Débloquer le Module 2</button>
+    </div>
+  </div>
+
+  <!-- === MODULE 2 === -->
+  <div class="view" id="view-module2">
+    <div class="module-header">
+      <div class="module-eyebrow">Module 02 · Formation IA</div>
+      <h2 class="module-title">Dominer les<br><em>Outils IA</em></h2>
+      <p class="module-intro">Tu vas découvrir les meilleurs outils IA disponibles aujourd'hui, comment choisir le bon outil selon ton objectif, et comment construire ta boîte à outils personnelle pour créer et vendre plus efficacement.</p>
+    </div>
+
+    <div class="audio-section">
+      <div class="audio-section-title">⬥ Leçons Audio — Écoute & Apprends</div>
+      <div class="audio-players">
+        <div class="audio-card" id="card-m2-1">
+          <div class="audio-top">
+            <button class="ap-btn" id="btn-m2-1" onclick="apToggle('m2-1')">▶</button>
+            <div class="ap-info">
+              <div class="ap-title">🎙 Leçon 2.1 — La carte des outils IA en 2025</div>
+              <div class="ap-meta">Vue d'ensemble complète · ~9 min</div>
+            </div>
+            <div class="ap-timer" id="timer-m2-1">0:00</div>
+          </div>
+          <div class="ap-bar-wrap">
+            <div class="ap-bar" id="bar-m2-1" onclick="apSeek(event, 'm2-1')">
+              <div class="ap-bar-fill" id="fill-m2-1"></div>
+            </div>
+            <div class="ap-vol" id="vol-m2-1" onclick="apVol(event, 'm2-1')">
+              <div class="ap-vol-fill" id="volfill-m2-1"></div>
+            </div>
+          </div>
+          <audio id="audio-m2-1" preload="none">
+            <source src="audio/m2-1.mp3" type="audio/mpeg">
+          </audio>
+          <div class="ap-no-file" id="nofile-m2-1" style="display:none">
+            ⚠ Fichier audio non trouvé —
+            <a onclick="apSpeech('m2-1', &quot;En 2025 les outils IA sont partout. ChatGPT et Claude pour écrire. Midjourney pour les images. ElevenLabs pour les voix. Canva AI pour le design. Ton rôle est de choisir le bon outil pour chaque tâche.&quot;)">Écouter avec synthèse vocale ▶</a>
+          </div>
+        </div>
+        <div class="audio-card" id="card-m2-2">
+          <div class="audio-top">
+            <button class="ap-btn" id="btn-m2-2" onclick="apToggle('m2-2')">▶</button>
+            <div class="ap-info">
+              <div class="ap-title">🎙 Leçon 2.2 — Choisir l'outil selon l'objectif</div>
+              <div class="ap-meta">Stratégie de sélection · ~8 min</div>
+            </div>
+            <div class="ap-timer" id="timer-m2-2">0:00</div>
+          </div>
+          <div class="ap-bar-wrap">
+            <div class="ap-bar" id="bar-m2-2" onclick="apSeek(event, 'm2-2')">
+              <div class="ap-bar-fill" id="fill-m2-2"></div>
+            </div>
+            <div class="ap-vol" id="vol-m2-2" onclick="apVol(event, 'm2-2')">
+              <div class="ap-vol-fill" id="volfill-m2-2"></div>
+            </div>
+          </div>
+          <audio id="audio-m2-2" preload="none">
+            <source src="audio/m2-2.mp3" type="audio/mpeg">
+          </audio>
+          <div class="ap-no-file" id="nofile-m2-2" style="display:none">
+            ⚠ Fichier audio non trouvé —
+            <a onclick="apSpeech('m2-2', &quot;La clé c est de ne pas utiliser un seul outil pour tout. Pour écrire du texte long, utilise Claude. Pour créer une couverture, utilise Canva AI. Pour une voix de formation, utilise ElevenLabs. Construis ton stack personnel.&quot;)">Écouter avec synthèse vocale ▶</a>
+          </div>
+        </div>
+        <div class="audio-card" id="card-m2-3">
+          <div class="audio-top">
+            <button class="ap-btn" id="btn-m2-3" onclick="apToggle('m2-3')">▶</button>
+            <div class="ap-info">
+              <div class="ap-title">🎙 Leçon 2.3 — Construire ta boîte à outils IA</div>
+              <div class="ap-meta">Productivité avancée · ~11 min</div>
+            </div>
+            <div class="ap-timer" id="timer-m2-3">0:00</div>
+          </div>
+          <div class="ap-bar-wrap">
+            <div class="ap-bar" id="bar-m2-3" onclick="apSeek(event, 'm2-3')">
+              <div class="ap-bar-fill" id="fill-m2-3"></div>
+            </div>
+            <div class="ap-vol" id="vol-m2-3" onclick="apVol(event, 'm2-3')">
+              <div class="ap-vol-fill" id="volfill-m2-3"></div>
+            </div>
+          </div>
+          <audio id="audio-m2-3" preload="none">
+            <source src="audio/m2-3.mp3" type="audio/mpeg">
+          </audio>
+          <div class="ap-no-file" id="nofile-m2-3" style="display:none">
+            ⚠ Fichier audio non trouvé —
+            <a onclick="apSpeech('m2-3', &quot;Ta boîte à outils idéale: un outil de texte comme Claude ou ChatGPT, un outil de design comme Canva, un outil de voix comme ElevenLabs, et une plateforme de vente comme Gumroad. Avec ces quatre outils tu peux créer et vendre n importe quel produit digital.&quot;)">Écouter avec synthèse vocale ▶</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lesson-block">
+      <h3 class="lesson-heading">Outils pour Écrire & Créer du Contenu</h3>
+      <div class="tool-card">
+        <div class="tool-emoji">🤖</div>
+        <div>
+          <div class="tool-name">ChatGPT / Claude / Gemini</div>
+          <div class="tool-desc">Les assistants IA textuels les plus puissants. Pour rédiger, corriger, créer des plans, générer des idées, écrire des eBooks et formations. Claude excelle en nuance et longueur.</div>
+          <div class="tool-tag">Gratuit + Payant</div>
+        </div>
+      </div>
+      <div class="tool-card">
+        <div class="tool-emoji">✍️</div>
+        <div>
+          <div class="tool-name">Copy.ai / Jasper</div>
+          <div class="tool-desc">Spécialisés pour le copywriting marketing : landing pages, emails de vente, posts réseaux sociaux, descriptions de produits. Optimisés pour convertir.</div>
+          <div class="tool-tag">Payant · Version gratuite</div>
+        </div>
+      </div>
+      <div class="tool-card">
+        <div class="tool-emoji">📧</div>
+        <div>
+          <div class="tool-name">Notion AI</div>
+          <div class="tool-desc">Organisation + rédaction intégrés. Parfait pour structurer tes formations, créer des bases de connaissances et gérer tes projets digitaux.</div>
+          <div class="tool-tag">Freemium</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lesson-block">
+      <h3 class="lesson-heading">Outils pour Images & Visuels</h3>
+      <div class="tool-card">
+        <div class="tool-emoji">🎨</div>
+        <div>
+          <div class="tool-name">Midjourney / DALL-E / Ideogram</div>
+          <div class="tool-desc">Génération d'images professionnelles en quelques secondes. Couvertures d'eBook, visuels marketing, illustrations de formation, photos de profil.</div>
+          <div class="tool-tag">Payant · Gratuit limité</div>
+        </div>
+      </div>
+      <div class="tool-card">
+        <div class="tool-emoji">🎭</div>
+        <div>
+          <div class="tool-name">Canva AI</div>
+          <div class="tool-desc">Design + IA combinés. Crée des présentations, eBooks, posts réseaux sociaux avec des fonctionnalités IA intégrées. Interface très accessible.</div>
+          <div class="tool-tag">Freemium · Très recommandé</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lesson-block">
+      <h3 class="lesson-heading">Outils pour Vidéos & Audio</h3>
+      <div class="tool-card">
+        <div class="tool-emoji">🎬</div>
+        <div>
+          <div class="tool-name">Runway / Kling AI</div>
+          <div class="tool-desc">Génération et édition vidéo par IA. Crée des vidéos promotionnelles, démos de produits et Reels sans équipement professionnel.</div>
+          <div class="tool-tag">Payant · Essai gratuit</div>
+        </div>
+      </div>
+      <div class="tool-card">
+        <div class="tool-emoji">🎤</div>
+        <div>
+          <div class="tool-name">ElevenLabs / Murf AI</div>
+          <div class="tool-desc">Synthèse vocale ultra-réaliste. Crée des audios de formation, podcasts, voix off professionnelles en français et dans de nombreuses langues africaines.</div>
+          <div class="tool-tag">Freemium · Très recommandé</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="interactive-block">
+      <div class="interactive-label">⬥ Exercice de sélection</div>
+      <div class="interactive-question">Pour ton projet actuel, quels sont les 3 outils IA qui te seront les plus utiles immédiatement ?</div>
+      <textarea class="interactive-textarea" id="q2-tools" placeholder="Ex : 1. Claude pour rédiger mon eBook 2. Canva AI pour créer la couverture 3. ElevenLabs pour les audios de ma formation..."></textarea>
+      <button class="btn-validate" onclick="saveAnswer('q2-tools', 'M2-outils')">Enregistrer mes choix →</button>
+    </div>
+
+    <div class="exercise-block">
+      <div class="exercise-tag">⬥ Exercice pratique — Module 2</div>
+      <div class="exercise-title">Crée ton Stack IA Personnel</div>
+      <div class="exercise-text">Un "stack" c'est ta combinaison d'outils. Construis le tien maintenant.</div>
+      <div class="exercise-steps">
+        <div class="exercise-step">
+          <div class="step-num">1</div>
+          <div>Va sur <strong>claude.ai</strong> ou <strong>chatgpt.com</strong> et crée un compte gratuit si tu n'en as pas</div>
+        </div>
+        <div class="exercise-step">
+          <div class="step-num">2</div>
+          <div>Va sur <strong>canva.com</strong> et crée un compte — active les fonctionnalités IA dans les paramètres</div>
+        </div>
+        <div class="exercise-step">
+          <div class="step-num">3</div>
+          <div>Va sur <strong>elevenlabs.io</strong> et génère ta première voix test en français — essaie 30 secondes de ta voix IA</div>
+        </div>
+        <div class="exercise-step">
+          <div class="step-num">4</div>
+          <div>Note dans le champ ci-dessous : <strong>tes impressions</strong> sur chaque outil testé</div>
+        </div>
+      </div>
+      <textarea class="interactive-textarea" id="ex2" placeholder="Mes impressions sur les outils testés..."></textarea>
+      <button class="btn-validate" onclick="completeExercise('ex2', 2)">Exercice terminé ✓</button>
+    </div>
+
+    <div class="module-nav-footer">
+      <button class="btn-next" onclick="showView('module1')">← Module 1</button>
+      <button class="btn-complete-module" onclick="completeModule(2)">Terminer le Module 2 → Débloquer le Module 3</button>
+    </div>
+  </div>
+
+  <!-- === MODULE 3 === -->
+  <div class="view" id="view-module3">
+    <div class="module-header">
+      <div class="module-eyebrow">Module 03 · Formation IA</div>
+      <h2 class="module-title">Créer un eBook<br><em>avec l'IA</em></h2>
+      <p class="module-intro">Dans ce module, tu vas passer de l'idée à un eBook complet, professionnel et vendable. Tu vas voir qu'avec l'IA, ce qui prenait des mois peut être fait en quelques jours.</p>
+    </div>
+
+    <div class="audio-section">
+      <div class="audio-section-title">⬥ Leçons Audio</div>
+      <div class="audio-players">
+        <div class="audio-card" id="card-m3-1">
+          <div class="audio-top">
+            <button class="ap-btn" id="btn-m3-1" onclick="apToggle('m3-1')">▶</button>
+            <div class="ap-info">
+              <div class="ap-title">🎙 Leçon 3.1 — Trouver le bon sujet d'eBook</div>
+              <div class="ap-meta">Recherche et validation · ~9 min</div>
+            </div>
+            <div class="ap-timer" id="timer-m3-1">0:00</div>
+          </div>
+          <div class="ap-bar-wrap">
+            <div class="ap-bar" id="bar-m3-1" onclick="apSeek(event, 'm3-1')">
+              <div class="ap-bar-fill" id="fill-m3-1"></div>
+            </div>
+            <div class="ap-vol" id="vol-m3-1" onclick="apVol(event, 'm3-1')">
+              <div class="ap-vol-fill" id="volfill-m3-1"></div>
+            </div>
+          </div>
+          <audio id="audio-m3-1" preload="none">
+            <source src="audio/m3-1.mp3" type="audio/mpeg">
+          </audio>
+          <div class="ap-no-file" id="nofile-m3-1" style="display:none">
+            ⚠ Fichier audio non trouvé —
+            <a onclick="apSpeech('m3-1', &quot;Le secret d un eBook qui se vend: écris sur ce que les gens cherchent à résoudre, pas sur ce qui te passionne. Cherche les questions répétées dans les groupes Facebook de ta niche. Demande directement à ta cible quel est son problème numéro un.&quot;)">Écouter avec synthèse vocale ▶</a>
+          </div>
+        </div>
+        <div class="audio-card" id="card-m3-2">
+          <div class="audio-top">
+            <button class="ap-btn" id="btn-m3-2" onclick="apToggle('m3-2')">▶</button>
+            <div class="ap-info">
+              <div class="ap-title">🎙 Leçon 3.2 — Écrire et structurer avec l'IA</div>
+              <div class="ap-meta">Processus de création · ~12 min</div>
+            </div>
+            <div class="ap-timer" id="timer-m3-2">0:00</div>
+          </div>
+          <div class="ap-bar-wrap">
+            <div class="ap-bar" id="bar-m3-2" onclick="apSeek(event, 'm3-2')">
+              <div class="ap-bar-fill" id="fill-m3-2"></div>
+            </div>
+            <div class="ap-vol" id="vol-m3-2" onclick="apVol(event, 'm3-2')">
+              <div class="ap-vol-fill" id="volfill-m3-2"></div>
+            </div>
+          </div>
+          <audio id="audio-m3-2" preload="none">
+            <source src="audio/m3-2.mp3" type="audio/mpeg">
+          </audio>
+          <div class="ap-no-file" id="nofile-m3-2" style="display:none">
+            ⚠ Fichier audio non trouvé —
+            <a onclick="apSpeech('m3-2', &quot;Voici le processus exact. Session 1, une heure: demande à l IA de créer le plan complet. Session 2, deux heures: génère le contenu chapitre par chapitre. Session 3, une heure: relis et ajoute tes exemples personnels. Session 4, une heure: mise en page sur Canva et export PDF.&quot;)">Écouter avec synthèse vocale ▶</a>
+          </div>
+        </div>
+        <div class="audio-card" id="card-m3-3">
+          <div class="audio-top">
+            <button class="ap-btn" id="btn-m3-3" onclick="apToggle('m3-3')">▶</button>
+            <div class="ap-info">
+              <div class="ap-title">🎙 Leçon 3.3 — Mise en page et publication</div>
+              <div class="ap-meta">Design et export · ~8 min</div>
+            </div>
+            <div class="ap-timer" id="timer-m3-3">0:00</div>
+          </div>
+          <div class="ap-bar-wrap">
+            <div class="ap-bar" id="bar-m3-3" onclick="apSeek(event, 'm3-3')">
+              <div class="ap-bar-fill" id="fill-m3-3"></div>
+            </div>
+            <div class="ap-vol" id="vol-m3-3" onclick="apVol(event, 'm3-3')">
+              <div class="ap-vol-fill" id="volfill-m3-3"></div>
+            </div>
+          </div>
+          <audio id="audio-m3-3" preload="none">
+            <source src="audio/m3-3.mp3" type="audio/mpeg">
+          </audio>
+          <div class="ap-no-file" id="nofile-m3-3" style="display:none">
+            ⚠ Fichier audio non trouvé —
+            <a onclick="apSpeech('m3-3', &quot;Pour la mise en page, Canva est ton meilleur ami. Utilise un modèle professionnel. Ajoute ton logo. Exporte en PDF haute qualité. Pour publier, crée un compte Gumroad ou Payhip. Mets ton prix, ta description générée par l IA, et publie.&quot;)">Écouter avec synthèse vocale ▶</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lesson-block">
+      <h3 class="lesson-heading">Étape 1 — Trouver un vrai problème du marché</h3>
+      <div class="lesson-text"><p>Le secret d'un eBook qui se vend n'est pas d'écrire sur ce qui te passionne. C'est d'écrire sur <strong>ce que les gens cherchent désespérément à résoudre</strong>. La passion vient après la validation du marché.</p></div>
+      <div class="lesson-list">
+        <div class="lesson-list-item"><strong>Méthode 1 :</strong> Cherche les questions répétées dans les groupes Facebook de ta niche</div>
+        <div class="lesson-list-item"><strong>Méthode 2 :</strong> Utilise Google Trends pour voir ce qui est recherché dans ton pays</div>
+        <div class="lesson-list-item"><strong>Méthode 3 :</strong> Demande directement à 5-10 personnes de ta cible : "Quel est ton problème numéro 1 avec [sujet] ?"</div>
+        <div class="lesson-list-item"><strong>Méthode 4 :</strong> Regarde les commentaires Amazon sur des livres dans ta thématique — les 1 et 2 étoiles te disent ce qui manque</div>
+      </div>
+    </div>
+
+    <div class="lesson-block">
+      <h3 class="lesson-heading">Étape 2 — Créer le titre parfait avec l'IA</h3>
+      <div class="lesson-text"><p>Le titre est responsable de 80% de ta vente. Voici le prompt exact à utiliser avec Claude ou ChatGPT :</p></div>
+      <div class="highlight-box">
+        <strong>Prompt IA à copier :</strong><br><br>
+        "Je veux créer un eBook sur [sujet]. Mon audience cible est [qui]. Le problème principal qu'ils ont est [problème]. Génère 10 titres percutants qui promettent une transformation claire, avec des sous-titres explicatifs. Formule les titres pour donner envie d'acheter immédiatement."
+      </div>
+    </div>
+
+    <div class="lesson-block">
+      <h3 class="lesson-heading">Étape 3 — Écrire le contenu avec l'IA</h3>
+      <div class="lesson-text"><p>Voici le processus exact qui te permet de produire un eBook de 30-60 pages en 48-72 heures :</p></div>
+      <div class="lesson-list">
+        <div class="lesson-list-item"><strong>Session 1 (1h) :</strong> Demande à l'IA de créer le plan complet — chapitres, sous-sections, points clés</div>
+        <div class="lesson-list-item"><strong>Session 2 (2h) :</strong> Génère le contenu chapitre par chapitre avec des prompts détaillés</div>
+        <div class="lesson-list-item"><strong>Session 3 (1h) :</strong> Relis, corrige le ton, ajoute tes exemples personnels et anecdotes</div>
+        <div class="lesson-list-item"><strong>Session 4 (1h) :</strong> Mise en page sur Canva et export en PDF</div>
+      </div>
+    </div>
+
+    <div class="interactive-block">
+      <div class="interactive-label">⬥ Définition de ton eBook</div>
+      <div class="interactive-question">Quel sera ton premier eBook ? Décris le sujet, la cible et le problème résolu en 2-3 phrases.</div>
+      <textarea class="interactive-textarea" id="q3-ebook" placeholder="Mon eBook s'appellera... Il s'adresse à... Il résout le problème de..."></textarea>
+      <button class="btn-validate" onclick="saveAnswer('q3-ebook', 'M3-ebook')">Valider mon idée →</button>
+    </div>
+
+    <div class="exercise-block">
+      <div class="exercise-tag">⬥ Exercice pratique — Module 3</div>
+      <div class="exercise-title">Crée le plan de ton eBook</div>
+      <div class="exercise-steps">
+        <div class="exercise-step"><div class="step-num">1</div><div>Ouvre Claude ou ChatGPT</div></div>
+        <div class="exercise-step"><div class="step-num">2</div><div>Utilise ce prompt : "Crée un plan détaillé de 8 chapitres pour un eBook intitulé [ton titre] pour [ta cible]. Inclus pour chaque chapitre : le titre, 3-4 points clés, et un exercice pratique."</div></div>
+        <div class="exercise-step"><div class="step-num">3</div><div>Copie le résultat ici et note ce que tu vas garder ou modifier</div></div>
+      </div>
+      <textarea class="interactive-textarea" id="ex3" placeholder="Colle ton plan ici et note tes modifications..."></textarea>
+      <button class="btn-validate" onclick="completeExercise('ex3', 3)">Exercice terminé ✓</button>
+    </div>
+
+    <div class="module-nav-footer">
+      <button class="btn-next" onclick="showView('module2')">← Module 2</button>
+      <button class="btn-complete-module" onclick="completeModule(3)">Terminer le Module 3 → Module 4</button>
+    </div>
+  </div>
+
+  <!-- === MODULE 4 === -->
+  <div class="view" id="view-module4">
+    <div class="module-header">
+      <div class="module-eyebrow">Module 04 · Formation IA</div>
+      <h2 class="module-title">Créer un Produit<br><em>Digital Complet</em></h2>
+      <p class="module-intro">L'eBook n'est que le début. Ce module t'ouvre les yeux sur tout l'univers des produits digitaux que tu peux créer, packager et vendre avec l'aide de l'IA.</p>
+    </div>
+
+    <div class="audio-section">
+      <div class="audio-section-title">⬥ Leçons Audio</div>
+      <div class="audio-players">
+        <div class="audio-card" id="card-m4-1">
+          <div class="audio-top">
+            <button class="ap-btn" id="btn-m4-1" onclick="apToggle('m4-1')">▶</button>
+            <div class="ap-info">
+              <div class="ap-title">🎙 Leçon 4.1 — L'univers des produits digitaux</div>
+              <div class="ap-meta">Vue d'ensemble · ~8 min</div>
+            </div>
+            <div class="ap-timer" id="timer-m4-1">0:00</div>
+          </div>
+          <div class="ap-bar-wrap">
+            <div class="ap-bar" id="bar-m4-1" onclick="apSeek(event, 'm4-1')">
+              <div class="ap-bar-fill" id="fill-m4-1"></div>
+            </div>
+            <div class="ap-vol" id="vol-m4-1" onclick="apVol(event, 'm4-1')">
+              <div class="ap-vol-fill" id="volfill-m4-1"></div>
+            </div>
+          </div>
+          <audio id="audio-m4-1" preload="none">
+            <source src="audio/m4-1.mp3" type="audio/mpeg">
+          </audio>
+          <div class="ap-no-file" id="nofile-m4-1" style="display:none">
+            ⚠ Fichier audio non trouvé —
+            <a onclick="apSpeech('m4-1', &quot;Un eBook n est que le début. Tu peux créer des workbooks, des mini-formations audio, des templates, des journaux, des kits digitaux complets. Combine plusieurs formats pour créer une offre à haute valeur perçue.&quot;)">Écouter avec synthèse vocale ▶</a>
+          </div>
+        </div>
+        <div class="audio-card" id="card-m4-2">
+          <div class="audio-top">
+            <button class="ap-btn" id="btn-m4-2" onclick="apToggle('m4-2')">▶</button>
+            <div class="ap-info">
+              <div class="ap-title">🎙 Leçon 4.2 — Comment packager une offre irrésistible</div>
+              <div class="ap-meta">Stratégie produit · ~10 min</div>
+            </div>
+            <div class="ap-timer" id="timer-m4-2">0:00</div>
+          </div>
+          <div class="ap-bar-wrap">
+            <div class="ap-bar" id="bar-m4-2" onclick="apSeek(event, 'm4-2')">
+              <div class="ap-bar-fill" id="fill-m4-2"></div>
+            </div>
+            <div class="ap-vol" id="vol-m4-2" onclick="apVol(event, 'm4-2')">
+              <div class="ap-vol-fill" id="volfill-m4-2"></div>
+            </div>
+          </div>
+          <audio id="audio-m4-2" preload="none">
+            <source src="audio/m4-2.mp3" type="audio/mpeg">
+          </audio>
+          <div class="ap-no-file" id="nofile-m4-2" style="display:none">
+            ⚠ Fichier audio non trouvé —
+            <a onclick="apSpeech('m4-2', &quot;La formule gagnante: produit principal plus bonus 1 plus bonus 2 plus garantie égale offre irrésistible. La valeur perçue doit toujours dépasser largement le prix affiché.&quot;)">Écouter avec synthèse vocale ▶</a>
+          </div>
+        </div>
+        <div class="audio-card" id="card-m4-3">
+          <div class="audio-top">
+            <button class="ap-btn" id="btn-m4-3" onclick="apToggle('m4-3')">▶</button>
+            <div class="ap-info">
+              <div class="ap-title">🎙 Leçon 4.3 — Prix, valeur et positionnement</div>
+              <div class="ap-meta">Stratégie de prix · ~9 min</div>
+            </div>
+            <div class="ap-timer" id="timer-m4-3">0:00</div>
+          </div>
+          <div class="ap-bar-wrap">
+            <div class="ap-bar" id="bar-m4-3" onclick="apSeek(event, 'm4-3')">
+              <div class="ap-bar-fill" id="fill-m4-3"></div>
+            </div>
+            <div class="ap-vol" id="vol-m4-3" onclick="apVol(event, 'm4-3')">
+              <div class="ap-vol-fill" id="volfill-m4-3"></div>
+            </div>
+          </div>
+          <audio id="audio-m4-3" preload="none">
+            <source src="audio/m4-3.mp3" type="audio/mpeg">
+          </audio>
+          <div class="ap-no-file" id="nofile-m4-3" style="display:none">
+            ⚠ Fichier audio non trouvé —
+            <a onclick="apSpeech('m4-3', &quot;Ne te sous-estime jamais. Pour un eBook de qualité, commence entre 5000 et 15000 francs CFA. Pour un pack complet, entre 20000 et 50000 francs. Pour une formation avec accompagnement, tu peux aller jusqu à 150000 francs.&quot;)">Écouter avec synthèse vocale ▶</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lesson-block">
+      <h3 class="lesson-heading">Les 8 types de produits digitaux à créer</h3>
+      <div class="lesson-list">
+        <div class="lesson-list-item"><strong>eBook PDF :</strong> 20-80 pages sur un sujet précis. Facile à créer, prix entre 1000-15000 FCFA.</div>
+        <div class="lesson-list-item"><strong>Workbook :</strong> Cahier d'exercices pratiques avec espaces de réponse. Complément parfait d'un eBook.</div>
+        <div class="lesson-list-item"><strong>Mini-formation vidéo/audio :</strong> 5-10 leçons enregistrées. Se vend entre 5000-50000 FCFA.</div>
+        <div class="lesson-list-item"><strong>Templates & modèles :</strong> Canva, Word, Excel prêts à l'emploi. Fort potentiel de revente répétée.</div>
+        <div class="lesson-list-item"><strong>Pack digital :</strong> Combinaison d'eBook + workbook + audios. Valeur perçue très élevée.</div>
+        <div class="lesson-list-item"><strong>Journal/agenda :</strong> Outil de suivi quotidien, mensuel ou annuel. Amazon KDP permet une impression à la demande.</div>
+        <div class="lesson-list-item"><strong>Programme en ligne :</strong> Formation structurée sur 4-8 semaines avec accompagnement.</div>
+        <div class="lesson-list-item"><strong>Kit IA clé en main :</strong> Ensemble de prompts, templates et guides pour utiliser l'IA dans une niche précise.</div>
+      </div>
+    </div>
+
+    <div class="lesson-block">
+      <h3 class="lesson-heading">Comment créer une offre irrésistible</h3>
+      <div class="highlight-box">
+        <strong>La formule gagnante :</strong> Produit principal + Bonus 1 + Bonus 2 + Garantie = Offre irrésistible<br><br>
+        Exemple : "Mon guide sur l'IA (19,90€) + 50 prompts IA prêts à l'emploi (valeur 9,90€) + Accès à mon groupe privé (valeur 15€) = Pour seulement 19,90€"
+      </div>
+    </div>
+
+    <div class="interactive-block">
+      <div class="interactive-label">⬥ Design de ton offre</div>
+      <div class="interactive-question">Quel type de produit digital vas-tu créer en premier ? Décris ton offre complète avec le produit principal et au moins 2 bonus.</div>
+      <textarea class="interactive-textarea" id="q4-offer" placeholder="Mon produit principal est... Mon bonus 1 est... Mon bonus 2 est... Mon prix sera..."></textarea>
+      <button class="btn-validate" onclick="saveAnswer('q4-offer', 'M4-offre')">Valider mon offre →</button>
+    </div>
+
+    <div class="exercise-block">
+      <div class="exercise-tag">⬥ Exercice pratique — Module 4</div>
+      <div class="exercise-title">Crée ta Page de Vente Rapide</div>
+      <div class="exercise-steps">
+        <div class="exercise-step"><div class="step-num">1</div><div>Utilise l'IA pour créer un titre accrocheur pour ton offre</div></div>
+        <div class="exercise-step"><div class="step-num">2</div><div>Demande à l'IA : "Écris une description de 150 mots pour mon [type de produit] qui résout [problème] pour [cible]"</div></div>
+        <div class="exercise-step"><div class="step-num">3</div><div>Ajoute 3 témoignages fictifs crédibles pour illustrer les résultats possibles</div></div>
+      </div>
+      <textarea class="interactive-textarea" id="ex4" placeholder="Titre, description et témoignages de ton offre..."></textarea>
+      <button class="btn-validate" onclick="completeExercise('ex4', 4)">Exercice terminé ✓</button>
+    </div>
+
+    <div class="module-nav-footer">
+      <button class="btn-next" onclick="showView('module3')">← Module 3</button>
+      <button class="btn-complete-module" onclick="completeModule(4)">Terminer le Module 4 → Module 5</button>
+    </div>
+  </div>
+
+  <!-- === MODULE 5 === -->
+  <div class="view" id="view-module5">
+    <div class="module-header">
+      <div class="module-eyebrow">Module 05 · Formation IA</div>
+      <h2 class="module-title">Créer ta<br><em>Plateforme Simple</em></h2>
+      <p class="module-intro">Ce module te montre comment transformer une idée en une vraie plateforme hébergée, professionnelle et premium — sans nécessairement avoir des compétences techniques avancées.</p>
+    </div>
+
+    <div class="audio-section">
+      <div class="audio-section-title">⬥ Leçons Audio</div>
+      <div class="audio-players">
+        <div class="audio-card" id="card-m5-1">
+          <div class="audio-top">
+            <button class="ap-btn" id="btn-m5-1" onclick="apToggle('m5-1')">▶</button>
+            <div class="ap-info">
+              <div class="ap-title">🎙 Leçon 5.1 — Les options pour créer ta plateforme</div>
+              <div class="ap-meta">Comparaison des solutions · ~10 min</div>
+            </div>
+            <div class="ap-timer" id="timer-m5-1">0:00</div>
+          </div>
+          <div class="ap-bar-wrap">
+            <div class="ap-bar" id="bar-m5-1" onclick="apSeek(event, 'm5-1')">
+              <div class="ap-bar-fill" id="fill-m5-1"></div>
+            </div>
+            <div class="ap-vol" id="vol-m5-1" onclick="apVol(event, 'm5-1')">
+              <div class="ap-vol-fill" id="volfill-m5-1"></div>
+            </div>
+          </div>
+          <audio id="audio-m5-1" preload="none">
+            <source src="audio/m5-1.mp3" type="audio/mpeg">
+          </audio>
+          <div class="ap-no-file" id="nofile-m5-1" style="display:none">
+            ⚠ Fichier audio non trouvé —
+            <a onclick="apSpeech('m5-1', &quot;Tu as trois options. Option 1, le no-code avec Gumroad ou Payhip, gratuit pour commencer. Option 2, semi-technique avec Webflow. Option 3, HTML avec l IA, contrôle total, hébergement gratuit sur Netlify. Commence par l option 1 pour vendre rapidement.&quot;)">Écouter avec synthèse vocale ▶</a>
+          </div>
+        </div>
+        <div class="audio-card" id="card-m5-2">
+          <div class="audio-top">
+            <button class="ap-btn" id="btn-m5-2" onclick="apToggle('m5-2')">▶</button>
+            <div class="ap-info">
+              <div class="ap-title">🎙 Leçon 5.2 — HTML avec l'IA, plus simple que tu penses</div>
+              <div class="ap-meta">Technique accessible · ~12 min</div>
+            </div>
+            <div class="ap-timer" id="timer-m5-2">0:00</div>
+          </div>
+          <div class="ap-bar-wrap">
+            <div class="ap-bar" id="bar-m5-2" onclick="apSeek(event, 'm5-2')">
+              <div class="ap-bar-fill" id="fill-m5-2"></div>
+            </div>
+            <div class="ap-vol" id="vol-m5-2" onclick="apVol(event, 'm5-2')">
+              <div class="ap-vol-fill" id="volfill-m5-2"></div>
+            </div>
+          </div>
+          <audio id="audio-m5-2" preload="none">
+            <source src="audio/m5-2.mp3" type="audio/mpeg">
+          </audio>
+          <div class="ap-no-file" id="nofile-m5-2" style="display:none">
+            ⚠ Fichier audio non trouvé —
+            <a onclick="apSpeech('m5-2', &quot;Tu n as pas besoin de savoir coder. Tu donnes tes instructions à l IA et elle code à ta place. Dis lui: crée une page de vente premium en HTML. Elle produit le code complet. Tu copies, tu colles, tu déploies sur Netlify. C est tout.&quot;)">Écouter avec synthèse vocale ▶</a>
+          </div>
+        </div>
+        <div class="audio-card" id="card-m5-3">
+          <div class="audio-top">
+            <button class="ap-btn" id="btn-m5-3" onclick="apToggle('m5-3')">▶</button>
+            <div class="ap-info">
+              <div class="ap-title">🎙 Leçon 5.3 — Héberger et lancer en ligne</div>
+              <div class="ap-meta">Mise en ligne · ~8 min</div>
+            </div>
+            <div class="ap-timer" id="timer-m5-3">0:00</div>
+          </div>
+          <div class="ap-bar-wrap">
+            <div class="ap-bar" id="bar-m5-3" onclick="apSeek(event, 'm5-3')">
+              <div class="ap-bar-fill" id="fill-m5-3"></div>
+            </div>
+            <div class="ap-vol" id="vol-m5-3" onclick="apVol(event, 'm5-3')">
+              <div class="ap-vol-fill" id="volfill-m5-3"></div>
+            </div>
+          </div>
+          <audio id="audio-m5-3" preload="none">
+            <source src="audio/m5-3.mp3" type="audio/mpeg">
+          </audio>
+          <div class="ap-no-file" id="nofile-m5-3" style="display:none">
+            ⚠ Fichier audio non trouvé —
+            <a onclick="apSpeech('m5-3', &quot;Pour héberger gratuitement: va sur netlify.com, crée un compte, glisse ton fichier HTML dans le dashboard. En 2 minutes tu as un lien en ligne. Pour un nom de domaine professionnel, Namecheap propose des domaines à partir de 1 euro par an.&quot;)">Écouter avec synthèse vocale ▶</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lesson-block">
+      <h3 class="lesson-heading">3 voies pour créer ta plateforme</h3>
+      <div class="tool-card"><div class="tool-emoji">🚀</div><div><div class="tool-name">Option 1 — No-code : Systeme.io / Gumroad / Payhip</div><div class="tool-desc">Plateformes tout-en-un pour vendre des produits digitaux. Gratuit pour commencer, tu crées ta page de vente et héberges tes produits en 1 heure.</div><div class="tool-tag">Recommandé pour débuter</div></div></div>
+      <div class="tool-card"><div class="tool-emoji">⚡</div><div><div class="tool-name">Option 2 — Semi-technique : Webflow / Carrd</div><div class="tool-desc">Crée des sites professionnels visuellement sans code. L'IA peut te guider étape par étape pour les personnaliser.</div><div class="tool-tag">Niveau intermédiaire</div></div></div>
+      <div class="tool-card"><div class="tool-emoji">💻</div><div><div class="tool-name">Option 3 — HTML avec IA (comme ce produit)</div><div class="tool-desc">Demande à l'IA de coder ta plateforme exactement comme tu la veux. Héberge gratuitement sur Netlify, Vercel ou GitHub Pages.</div><div class="tool-tag">Contrôle total · Gratuit</div></div></div>
+    </div>
+
+    <div class="lesson-block">
+      <h3 class="lesson-heading">Comment l'IA peut coder à ta place</h3>
+      <div class="highlight-box">
+        <strong>Prompt de départ pour ton site :</strong><br><br>
+        "Crée une page HTML complète et premium pour vendre [ton produit]. La page doit avoir : un hero avec titre accrocheur, une section bénéfices, une section témoignages, une section prix avec bouton d'achat, et un footer. Utilise un design sombre avec des accents dorés. Rends-la responsive mobile."
+      </div>
+    </div>
+
+    <div class="interactive-block">
+      <div class="interactive-label">⬥ Planification de ta plateforme</div>
+      <div class="interactive-question">Quelle solution vas-tu utiliser pour héberger ton produit ? Qu'est-ce qui te correspond le mieux ?</div>
+      <div class="options-grid">
+        <button class="option-btn" onclick="selectOption(this,'q5-platform')">🛒 Gumroad / Payhip</button>
+        <button class="option-btn" onclick="selectOption(this,'q5-platform')">🌐 Systeme.io</button>
+        <button class="option-btn" onclick="selectOption(this,'q5-platform')">💻 Page HTML avec IA</button>
+        <button class="option-btn" onclick="selectOption(this,'q5-platform')">🎨 Webflow / Carrd</button>
+      </div>
+      <button class="btn-validate" onclick="validateOption('q5-platform')">Valider mon choix →</button>
+    </div>
+
+    <div class="exercise-block">
+      <div class="exercise-tag">⬥ Exercice pratique — Module 5</div>
+      <div class="exercise-title">Lance ta Page de Vente</div>
+      <div class="exercise-steps">
+        <div class="exercise-step"><div class="step-num">1</div><div>Crée un compte gratuit sur <strong>gumroad.com</strong> ou <strong>payhip.com</strong></div></div>
+        <div class="exercise-step"><div class="step-num">2</div><div>Crée un produit fictif ou réel avec un titre, une description (générée par l'IA) et un prix</div></div>
+        <div class="exercise-step"><div class="step-num">3</div><div>Note l'URL de ta page de vente ici — c'est ton premier produit en ligne !</div></div>
+      </div>
+      <textarea class="interactive-textarea" id="ex5" placeholder="URL de ma page : https://... — Notes sur l'expérience..."></textarea>
+      <button class="btn-validate" onclick="completeExercise('ex5', 5)">Exercice terminé ✓</button>
+    </div>
+
+    <div class="module-nav-footer">
+      <button class="btn-next" onclick="showView('module4')">← Module 4</button>
+      <button class="btn-complete-module" onclick="completeModule(5)">Terminer le Module 5 → Module 6</button>
+    </div>
+  </div>
+
+  <!-- === MODULE 6 === -->
+  <div class="view" id="view-module6">
+    <div class="module-header">
+      <div class="module-eyebrow">Module 06 · Formation IA</div>
+      <h2 class="module-title">Trouver tes<br><em>Premiers Clients</em></h2>
+      <p class="module-intro">Avoir un produit ne suffit pas. Ce module te donne une stratégie claire et réaliste pour trouver tes premiers acheteurs, faire ta première vente et construire une base de clients fidèles.</p>
+    </div>
+
+    <div class="audio-section">
+      <div class="audio-section-title">⬥ Leçons Audio</div>
+      <div class="audio-players">
+        <div class="audio-card" id="card-m6-1">
+          <div class="audio-top">
+            <button class="ap-btn" id="btn-m6-1" onclick="apToggle('m6-1')">▶</button>
+            <div class="ap-info">
+              <div class="ap-title">🎙 Leçon 6.1 — La psychologie de la vente</div>
+              <div class="ap-meta">Mindset commercial · ~9 min</div>
+            </div>
+            <div class="ap-timer" id="timer-m6-1">0:00</div>
+          </div>
+          <div class="ap-bar-wrap">
+            <div class="ap-bar" id="bar-m6-1" onclick="apSeek(event, 'm6-1')">
+              <div class="ap-bar-fill" id="fill-m6-1"></div>
+            </div>
+            <div class="ap-vol" id="vol-m6-1" onclick="apVol(event, 'm6-1')">
+              <div class="ap-vol-fill" id="volfill-m6-1"></div>
+            </div>
+          </div>
+          <audio id="audio-m6-1" preload="none">
+            <source src="audio/m6-1.mp3" type="audio/mpeg">
+          </audio>
+          <div class="ap-no-file" id="nofile-m6-1" style="display:none">
+            ⚠ Fichier audio non trouvé —
+            <a onclick="apSpeech('m6-1', &quot;Vendre c est aider quelqu un à résoudre un problème. Si tu crois vraiment que ton produit peut changer la vie de quelqu un, tu lui rends service en le lui proposant. La peur du non est normale. Les meilleurs vendeurs ont eu cent non avant leur premier oui.&quot;)">Écouter avec synthèse vocale ▶</a>
+          </div>
+        </div>
+        <div class="audio-card" id="card-m6-2">
+          <div class="audio-top">
+            <button class="ap-btn" id="btn-m6-2" onclick="apToggle('m6-2')">▶</button>
+            <div class="ap-info">
+              <div class="ap-title">🎙 Leçon 6.2 — Prospecter sur WhatsApp et réseaux sociaux</div>
+              <div class="ap-meta">Stratégie pratique · ~11 min</div>
+            </div>
+            <div class="ap-timer" id="timer-m6-2">0:00</div>
+          </div>
+          <div class="ap-bar-wrap">
+            <div class="ap-bar" id="bar-m6-2" onclick="apSeek(event, 'm6-2')">
+              <div class="ap-bar-fill" id="fill-m6-2"></div>
+            </div>
+            <div class="ap-vol" id="vol-m6-2" onclick="apVol(event, 'm6-2')">
+              <div class="ap-vol-fill" id="volfill-m6-2"></div>
+            </div>
+          </div>
+          <audio id="audio-m6-2" preload="none">
+            <source src="audio/m6-2.mp3" type="audio/mpeg">
+          </audio>
+          <div class="ap-no-file" id="nofile-m6-2" style="display:none">
+            ⚠ Fichier audio non trouvé —
+            <a onclick="apSpeech('m6-2', &quot;La stratégie des trois cercles. Cercle 1: ton réseau chaud, famille et amis. Cercle 2: tes connexions digitales, groupes WhatsApp et Facebook. Cercle 3: la prospection directe vers des personnes qui ont exactement le problème que tu résous.&quot;)">Écouter avec synthèse vocale ▶</a>
+          </div>
+        </div>
+        <div class="audio-card" id="card-m6-3">
+          <div class="audio-top">
+            <button class="ap-btn" id="btn-m6-3" onclick="apToggle('m6-3')">▶</button>
+            <div class="ap-info">
+              <div class="ap-title">🎙 Leçon 6.3 — Closer avec confiance</div>
+              <div class="ap-meta">Techniques de closing · ~10 min</div>
+            </div>
+            <div class="ap-timer" id="timer-m6-3">0:00</div>
+          </div>
+          <div class="ap-bar-wrap">
+            <div class="ap-bar" id="bar-m6-3" onclick="apSeek(event, 'm6-3')">
+              <div class="ap-bar-fill" id="fill-m6-3"></div>
+            </div>
+            <div class="ap-vol" id="vol-m6-3" onclick="apVol(event, 'm6-3')">
+              <div class="ap-vol-fill" id="volfill-m6-3"></div>
+            </div>
+          </div>
+          <audio id="audio-m6-3" preload="none">
+            <source src="audio/m6-3.mp3" type="audio/mpeg">
+          </audio>
+          <div class="ap-no-file" id="nofile-m6-3" style="display:none">
+            ⚠ Fichier audio non trouvé —
+            <a onclick="apSpeech('m6-3', &quot;Quand quelqu un est intéressé, ne complique pas. Dis simplement: le prix est X, voilà le lien de paiement. Si il hésite, rappelle les résultats possibles. Puis tais-toi et laisse-le décider. Le silence après ta présentation est ton meilleur allié.&quot;)">Écouter avec synthèse vocale ▶</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lesson-block">
+      <h3 class="lesson-heading">La stratégie des 3 cercles</h3>
+      <div class="lesson-text"><p>Pour trouver tes premiers clients, commence par les 3 cercles concentriques autour de toi.</p></div>
+      <div class="lesson-list">
+        <div class="lesson-list-item"><strong>Cercle 1 — Ton réseau chaud (famille, amis, anciens collègues) :</strong> Parle de ton produit directement. Pas de vente forcée — juste partager ce que tu fais. Au moins 1 ou 2 ventes garanties si tu le fais bien.</div>
+        <div class="lesson-list-item"><strong>Cercle 2 — Tes connexions digitales (groupes WhatsApp, Facebook, LinkedIn) :</strong> Publie du contenu de valeur sur le sujet de ton produit. Les gens viennent à toi naturellement.</div>
+        <div class="lesson-list-item"><strong>Cercle 3 — La prospection directe :</strong> Identifie des entreprises ou particuliers qui ont exactement le problème que ton produit résout. Envoie un message personnalisé.</div>
+      </div>
+    </div>
+
+    <div class="lesson-block">
+      <h3 class="lesson-heading">Le message de prospection qui convertit</h3>
+      <div class="highlight-box">
+        <strong>Structure du message parfait (WhatsApp / DM) :</strong><br><br>
+        1. <strong>Connexion :</strong> "Bonjour [Prénom], je suis [Ton Nom]..."<br>
+        2. <strong>Observation :</strong> "J'ai vu que tu travailles dans [domaine]..."<br>
+        3. <strong>Problème :</strong> "La plupart des [cible] ont du mal avec [problème]..."<br>
+        4. <strong>Solution :</strong> "J'ai créé [produit] qui permet de [résultat]..."<br>
+        5. <strong>Appel à l'action :</strong> "Est-ce que ça t'intéresserait d'en savoir plus ?"
+      </div>
+    </div>
+
+    <div class="lesson-block">
+      <h3 class="lesson-heading">Comment avoir confiance pour vendre</h3>
+      <div class="lesson-list">
+        <div class="lesson-list-item"><strong>Vends toujours la transformation, jamais le produit :</strong> "Ce n'est pas un eBook, c'est la façon dont tu vas enfin gagner tes premiers revenus en ligne."</div>
+        <div class="lesson-list-item"><strong>La peur du non est normale :</strong> Les meilleurs vendeurs ont eu 100 non avant leur premier oui. Chaque refus est un entraînement.</div>
+        <div class="lesson-list-item"><strong>Crois en ta valeur :</strong> Si tu as appris quelque chose qui peut changer la vie de quelqu'un, tu leur rends service en le leur proposant.</div>
+        <div class="lesson-list-item"><strong>Utilise l'IA pour préparer tes arguments :</strong> Demande à l'IA de te lister les 10 objections les plus courantes et comment y répondre.</div>
+      </div>
+    </div>
+
+    <div class="interactive-block">
+      <div class="interactive-label">⬥ Ton plan d'action commercial</div>
+      <div class="interactive-question">Qui sont tes 5 premiers contacts potentiels ? Qui, dans ton entourage ou réseau, pourrait être intéressé par ton produit ?</div>
+      <textarea class="interactive-textarea" id="q6-prospects" placeholder="Personne 1 : Nom, pourquoi elle serait intéressée...\nPersonne 2 : ...\n(Garde ça pour toi, c'est ton plan privé)"></textarea>
+      <button class="btn-validate" onclick="saveAnswer('q6-prospects', 'M6-prospects')">Enregistrer mon plan →</button>
+    </div>
+
+    <div class="exercise-block">
+      <div class="exercise-tag">⬥ Exercice pratique — Module 6</div>
+      <div class="exercise-title">Rédige ton Message de Prospection</div>
+      <div class="exercise-steps">
+        <div class="exercise-step"><div class="step-num">1</div><div>Utilise l'IA pour rédiger 3 versions d'un message de prospection pour ton produit</div></div>
+        <div class="exercise-step"><div class="step-num">2</div><div>Personnalise la meilleure version selon ta cible</div></div>
+        <div class="exercise-step"><div class="step-num">3</div><div>Envoie-le à au moins 3 personnes de ton réseau (vraiment !)</div></div>
+      </div>
+      <textarea class="interactive-textarea" id="ex6" placeholder="Mon message de prospection finalisé..."></textarea>
+      <button class="btn-validate" onclick="completeExercise('ex6', 6)">Exercice terminé ✓</button>
+    </div>
+
+    <div class="module-nav-footer">
+      <button class="btn-next" onclick="showView('module5')">← Module 5</button>
+      <button class="btn-complete-module" onclick="completeModule(6)">Terminer le Module 6 → Examen Final !</button>
+    </div>
+  </div>
+
+  <!-- === EXAMEN FINAL === -->
+  <div class="view" id="view-exam">
+
+    <div id="examIntro">
+      <div class="exam-header">
+        <span class="exam-icon">🏆</span>
+        <h2 class="exam-title">Examen <em>Final</em></h2>
+        <p class="exam-desc">Tu as terminé les 6 modules. Il est temps de valider tes connaissances. L'examen contient 12 questions. Un score de 70% minimum est requis pour obtenir ton certificat. Tu peux recommencer si nécessaire.</p>
+      </div>
+
+      <div id="examQuestions">
+        <!-- Questions générées par JS -->
+      </div>
+
+      <div class="exam-actions" id="examActions">
+        <button class="btn-complete-module" onclick="submitExam()">Soumettre mes réponses →</button>
+      </div>
+    </div>
+
+    <div class="exam-result" id="examResult">
+      <span class="result-icon" id="resultIcon">🏆</span>
+      <div class="result-score" id="resultScore">0%</div>
+      <div class="result-text" id="resultText">Félicitations !</div>
+      <p class="result-desc" id="resultDesc"></p>
+      <div id="resultActions"></div>
+    </div>
+
+  </div>
+
+  <!-- === DIPLÔME === -->
+  <div class="diploma-view" id="view-diploma">
+    <div style="text-align:center; margin-bottom:32px;">
+      <div class="dash-eyebrow" style="text-align:center">⬥ Ton certificat d'excellence</div>
+      <h2 style="font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:300;margin-top:8px;">Certificat <em style="font-style:italic;color:var(--gold)">Premium</em></h2>
+    </div>
+
+    <div class="diploma-actions">
+      <button class="btn-print" onclick="window.print()">🖨 Imprimer</button>
+      <button class="btn-download" onclick="downloadDiploma()">⬇ Télécharger en PNG</button>
+    </div>
+
+    <div class="diploma-wrapper">
+      <canvas id="diplomaCanvas" width="1200" height="850"></canvas>
+    </div>
+  </div>
+
+</div><!-- end .main -->
+
+<!-- NOTIFICATION -->
+<div class="notification" id="notification">
+  <span id="notificationText"></span>
+</div>
+
+<script>
+// ============================================================
+// STATE MANAGEMENT
+// ============================================================
+const STATE = {
+  completedModules: JSON.parse(localStorage.getItem('ia_completed') || '[]'),
+  answers: JSON.parse(localStorage.getItem('ia_answers') || '{}'),
+  userName: localStorage.getItem('ia_username') || '',
+  examScore: parseInt(localStorage.getItem('ia_score') || '0'),
+};
+
+function saveState() {
+  localStorage.setItem('ia_completed', JSON.stringify(STATE.completedModules));
+  localStorage.setItem('ia_answers', JSON.stringify(STATE.answers));
+  localStorage.setItem('ia_username', STATE.userName);
+  localStorage.setItem('ia_score', STATE.examScore);
+}
+
+// ============================================================
+// NAVIGATION
+// ============================================================
+function showView(id) {
+  // Arrêt audio lors de la navigation
+  if (typeof AP_current_id !== 'undefined' && AP_current_id) {
+    window.speechSynthesis && window.speechSynthesis.cancel();
+    apSetStopped && apSetStopped(AP_current_id);
+  }
+
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.diploma-view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+
+  // Le diplôme a sa propre classe diploma-view — traitement séparé
+  if (id === 'diploma') {
+    const dv = document.getElementById('view-diploma');
+    if (dv) dv.classList.add('active');
+  } else {
+    const view = document.getElementById('view-' + id);
+    if (view) view.classList.add('active');
+  }
+
+  const nav = document.getElementById('nav-' + id);
+  if (nav) nav.classList.add('active');
+
+  // Breadcrumb
+  const names = {
+    dashboard: 'Tableau de bord',
+    module1: 'Module 1 — Comprendre l\'IA',
+    module2: 'Module 2 — Outils IA',
+    module3: 'Module 3 — Créer un eBook',
+    module4: 'Module 4 — Produit Digital',
+    module5: 'Module 5 — Ta Plateforme',
+    module6: 'Module 6 — Trouver des Clients',
+    exam: 'Examen Final',
+    diploma: 'Certificat'
+  };
+  document.getElementById('breadcrumbCurrent').textContent = names[id] || id;
+
+  // Close sidebar on mobile
+  closeSidebar();
+  window.scrollTo(0, 0);
+}
+
+function showLockedMsg() {
+  notify('🔒 Termine le module précédent pour débloquer celui-ci !');
+}
+
+// ============================================================
+// MODULE COMPLETION
+// ============================================================
+const MODULES_MAP = {
+  1: { next: 'module2', navKey: 'nav-m2', label: 'Module 2 débloqué !' },
+  2: { next: 'module3', navKey: 'nav-m3', label: 'Module 3 débloqué !' },
+  3: { next: 'module4', navKey: 'nav-m4', label: 'Module 4 débloqué !' },
+  4: { next: 'module5', navKey: 'nav-m5', label: 'Module 5 débloqué !' },
+  5: { next: 'module6', navKey: 'nav-m6', label: 'Module 6 débloqué !' },
+  6: { next: 'exam', navKey: 'nav-exam', label: 'Examen Final débloqué ! 🏆' },
+};
+
+function completeModule(num) {
+  if (!STATE.completedModules.includes(num)) {
+    STATE.completedModules.push(num);
+    saveState();
+  }
+
+  const info = MODULES_MAP[num];
+  if (info) {
+    // Unlock nav
+    const navEl = document.getElementById(info.navKey);
+    if (navEl) {
+      navEl.classList.remove('locked');
+      navEl.onclick = () => showView(info.next);
+      navEl.querySelector('.nav-lock') && navEl.querySelector('.nav-lock').remove();
+    }
+    // Mark current as completed
+    const curNav = document.getElementById('nav-m' + num) || document.getElementById('nav-module' + num);
+    document.getElementById('nav-m' + num) && document.getElementById('nav-m' + num).classList.add('completed');
+
+    notify('✓ ' + info.label);
+
+    setTimeout(() => {
+      showView(info.next);
+      if (info.next === 'exam') buildExam();
+    }, 800);
+  }
+
+  updateProgress();
+  renderDashboard();
+}
+
+function updateProgress() {
+  const total = 7;
+  const done = STATE.completedModules.length;
+  const pct = Math.round((done / total) * 100);
+
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressPercent').textContent = pct + '%';
+  document.getElementById('statModules').textContent = done + '/7';
+  document.getElementById('statProgress').textContent = pct + '%';
+  document.getElementById('topbarScore').textContent = 'Module ' + done + '/7';
+}
+
+// ============================================================
+// DASHBOARD RENDER
+// ============================================================
+const DASH_MODULES = [
+  { num: 1, key: 'module1', title: 'Comprendre l\'Intelligence Artificielle', desc: 'Qu\'est-ce que l\'IA, opportunité et mentalité de domination.' },
+  { num: 2, key: 'module2', title: 'Dominer les Outils IA', desc: 'Les meilleurs outils pour écrire, créer des images, vidéos, voix.' },
+  { num: 3, key: 'module3', title: 'Créer un eBook avec l\'IA', desc: 'De l\'idée à un PDF vendable en quelques jours.' },
+  { num: 4, key: 'module4', title: 'Créer un Produit Digital', desc: 'Au-delà de l\'eBook — packs, formations, templates et kits.' },
+  { num: 5, key: 'module5', title: 'Créer ta Plateforme Simple', desc: 'Héberger et présenter ton offre en ligne professionnellement.' },
+  { num: 6, key: 'module6', title: 'Trouver tes Premiers Clients', desc: 'Prospecter, convaincre et faire ta première vente.' },
+  { num: 7, key: 'exam', title: 'Examen Final + Certificat', desc: 'Valide tes connaissances et reçois ton certificat premium.' },
+];
+
+function renderDashboard() {
+  const grid = document.getElementById('dashModulesGrid');
+  grid.innerHTML = '';
+
+  DASH_MODULES.forEach(m => {
+    const completed = STATE.completedModules.includes(m.num);
+    const prevDone = m.num === 1 || STATE.completedModules.includes(m.num - 1);
+    const locked = !prevDone && !completed;
+
+    let status, statusClass, clickable;
+    if (completed) { status = '✓ Terminé'; statusClass = 'status-completed'; clickable = true; }
+    else if (locked) { status = '🔒 Verrouillé'; statusClass = 'status-locked'; clickable = false; }
+    else { status = '▶ Disponible'; statusClass = 'status-available'; clickable = true; }
+
+    const card = document.createElement('div');
+    card.className = 'dash-module-card' + (completed ? ' completed' : '') + (locked ? ' locked' : '');
+    card.innerHTML = `
+      <div class="dash-card-num">MODULE ${String(m.num).padStart(2,'0')}</div>
+      <div class="dash-card-title">${m.title}</div>
+      <div class="dash-card-desc">${m.desc}</div>
+      <div class="dash-card-footer">
+        <span class="dash-card-status ${statusClass}">${status}</span>
+        <span class="dash-card-arrow">${clickable ? '→' : ''}</span>
+      </div>
+    `;
+    if (clickable) card.onclick = () => showView(m.key);
+    grid.appendChild(card);
+  });
+}
+
+// ============================================================
+// INTERACTIVE
+// ============================================================
+function saveAnswer(fieldId, key) {
+  const val = document.getElementById(fieldId)?.value;
+  if (val && val.trim()) {
+    STATE.answers[key] = val.trim();
+    saveState();
+    notify('✓ Réponse enregistrée !');
+  } else {
+    notify('⚠ Écris ta réponse avant de valider.');
+  }
+}
+
+function selectOption(btn, group) {
+  document.querySelectorAll(`[onclick*="${group}"]`).forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  STATE.answers[group] = btn.textContent.trim();
+  saveState();
+}
+
+function validateOption(group) {
+  if (!STATE.answers[group]) {
+    notify('⚠ Sélectionne une option d\'abord !');
+    return;
+  }
+  notify('✓ Choix validé : ' + STATE.answers[group]);
+}
+
+function completeExercise(fieldId, moduleNum) {
+  const val = document.getElementById(fieldId)?.value;
+  if (val && val.trim().length > 10) {
+    STATE.answers['ex' + moduleNum] = val.trim();
+    saveState();
+    notify('🎯 Exercice Module ' + moduleNum + ' complété !');
+  } else {
+    notify('⚠ Développe ta réponse un peu plus pour valider l\'exercice.');
+  }
+}
+
+// ============================================================
+// SYSTÈME AUDIO — Synthèse vocale française directe
+// Clique sur ▶ = la voix parle immédiatement
+// ============================================================
+
+// Textes complets de chaque leçon audio
+const AUDIO_TEXTS = {
+  'm1-1': "Bienvenue dans la leçon 1.1. Qu'est-ce que vraiment l'intelligence artificielle ? L'intelligence artificielle, c'est la capacité d'une machine à imiter des fonctions cognitives humaines : apprendre, raisonner, résoudre des problèmes, comprendre le langage naturel. Ce qui change aujourd'hui, c'est que cette technologie est devenue accessible à tous. Pendant des décennies, l'IA était réservée aux laboratoires de recherche et aux grandes entreprises technologiques. Maintenant, elle est dans ton téléphone, dans ton navigateur, disponible gratuitement ou à très faible coût. Si tu peux écrire un message WhatsApp, tu peux utiliser l'intelligence artificielle. L'IA ne remplace pas les humains qui savent l'utiliser. Elle remplace ceux qui refusent de l'apprendre. La question n'est pas si tu dois apprendre l'IA. C'est quand tu commences. Et la réponse, c'est maintenant. Dans cette formation, tu vas passer de zéro à quelqu'un qui utilise l'IA comme un outil de puissance chaque jour. Prends des notes. Fais les exercices. Et surtout, commence à pratiquer dès aujourd'hui.",
+
+  'm1-2': "Leçon 1.2. Pourquoi l'IA est une opportunité historique. Nous vivons un moment comparable à l'invention d'Internet dans les années 90. Ceux qui ont compris Internet tôt ont bâti des empires. Amazon, Google, Facebook... Ces entreprises n'existaient pas avant Internet. Leurs fondateurs ont vu une opportunité que la majorité ignorait encore. Aujourd'hui, l'IA crée les mêmes opportunités. Voici pourquoi maintenant est le meilleur moment pour toi. Premièrement, les outils IA sont accessibles et souvent gratuits ou très abordables. Deuxièmement, la demande en services liés à l'IA explose dans toutes les industries. Troisièmement, en Afrique francophone, très peu de personnes maîtrisent ces outils. La compétition est quasi nulle. C'est une fenêtre d'opportunité rare. Quatrièmement, tu peux créer des produits digitaux dix fois plus vite qu'avant avec l'IA. Cinquièmement, les entreprises cherchent désespérément des personnes capables de les aider avec l'IA. Une personne qui comprend l'IA aujourd'hui est comme quelqu'un qui comprenait Internet en 1995. C'est ton moment. Ne le laisse pas passer.",
+
+  'm1-3': "Leçon 1.3. La mentalité pour dominer l'IA. Le principe fondamental que tu dois graver dans ta tête : tu n'es pas là pour utiliser l'IA. Tu es là pour lui donner des ordres et obtenir des résultats précis. L'IA est ton assistant, pas ton patron. Pense à l'IA comme à un collaborateur ultra-compétent qui ne dort jamais, qui ne se fatigue jamais, qui peut écrire, dessiner, coder, analyser, et tout ça en quelques secondes. Mais ce collaborateur a besoin de toi pour lui donner la direction. Plus tu le guides avec précision, plus les résultats sont extraordinaires. Voici les quatre règles de la bonne mentalité. Règle numéro un : pense en termes de résultats, pas en termes de processus. Dis-toi : quel résultat est-ce que je veux ? Puis demande-le à l'IA clairement. Règle numéro deux : commence imparfait. L'IA génère un premier draft. Ton rôle est de guider, corriger et personnaliser. Règle numéro trois : expérimente sans peur. Aucune action avec l'IA n'est irréversible. Teste, ajuste, améliore. Règle numéro quatre : la valeur est dans ta vision. L'IA exécute. Toi tu crées, tu diriges, tu décides. C'est toi le talent. L'IA est ton outil.",
+
+  'm2-1': "Leçon 2.1. La carte des outils IA en 2025. En 2025, les outils IA sont partout. Mais tous ne se valent pas. Voici la carte complète des outils que tu dois connaître. Pour écrire et créer du contenu : ChatGPT et Claude sont les plus puissants. Claude excelle en nuance et en textes longs. ChatGPT est excellent pour les idées rapides. Pour les images : Midjourney crée des visuels cinématographiques. DALL-E est intégré à ChatGPT. Ideogram est excellent pour les textes dans les images. Pour les voix et audios : ElevenLabs crée des voix synthétiques ultra-réalistes en français et dans des dizaines de langues. Murf AI est une alternative professionnelle. Pour les vidéos : Runway permet de créer et d'éditer des vidéos par IA. Kling AI génère des vidéos à partir de texte. Pour le design : Canva AI combine design et intelligence artificielle dans une interface accessible à tous. Pour la productivité : Notion AI aide à organiser et rédiger. Perplexity AI est excellent pour la recherche. La clé n'est pas de maîtriser tous ces outils. C'est de choisir le bon outil pour chaque objectif.",
+
+  'm2-2': "Leçon 2.2. Comment choisir l'outil selon l'objectif. Voici la règle d'or : un objectif, un outil spécialisé. Ne demande pas à un outil de faire ce pour quoi il n'est pas conçu. Si tu veux écrire un eBook complet, utilise Claude ou ChatGPT. Si tu veux créer la couverture de cet eBook, utilise Canva AI ou Midjourney. Si tu veux enregistrer une voix professionnelle pour une formation audio, utilise ElevenLabs. Si tu veux créer une vidéo promotionnelle, utilise Runway. Pour un entrepreneur qui débute, je recommande ce stack minimal mais puissant. Claude ou ChatGPT pour tout ce qui est texte et stratégie. Canva pour tout ce qui est visuel et design. ElevenLabs pour les audios professionnels. Gumroad ou Payhip pour vendre. Avec ces quatre outils, tu peux créer et vendre n'importe quel produit digital. C'est simple, c'est efficace, et la plupart sont gratuits ou très abordables. Commence avec ce stack. Maîtrise-le. Puis tu ajouteras d'autres outils au fur et à mesure de tes besoins.",
+
+  'm2-3': "Leçon 2.3. Construire ta boîte à outils IA personnelle. Une boîte à outils, c'est ta combinaison d'outils que tu maîtrises parfaitement. Voici comment la construire étape par étape. Étape 1 : commence par un seul outil de texte. Crée un compte sur claude.ai ou chatgpt.com. Utilise-le tous les jours pendant une semaine. Pose-lui des questions, demande-lui de t'aider à écrire, à planifier, à analyser. Étape 2 : ajoute un outil de design. Canva est le meilleur choix pour débuter. Interface simple, modèles professionnels, fonctionnalités IA intégrées. Étape 3 : explore ElevenLabs pour les voix. Génère ta première voix synthétique en français. Tu seras surpris par la qualité. Étape 4 : connecte tout à une plateforme de vente. Gumroad ou Payhip te permettent de vendre tes créations en quelques minutes. La règle la plus importante : utilise tes outils régulièrement. La maîtrise vient de la pratique, pas de la théorie. Vingt minutes par jour avec l'IA valent plus que dix heures de lecture sur l'IA.",
+
+  'm3-1': "Leçon 3.1. Trouver le bon sujet pour ton eBook. Le secret d'un eBook qui se vend n'est pas d'écrire sur ce qui te passionne. C'est d'écrire sur ce que les gens cherchent désespérément à résoudre. La passion vient après la validation du marché. Voici les quatre meilleures méthodes pour trouver un sujet qui se vend. Méthode 1 : les groupes Facebook de ta niche. Va dans les groupes où se trouve ton audience cible. Cherche les questions qui reviennent le plus souvent. Ces questions répétées sont des signaux d'or. Chaque question récurrente est un eBook potentiel. Méthode 2 : Google Trends. Va sur trends.google.com. Tape des sujets potentiels. Vois ce qui monte, ce qui est recherché dans ton pays. Un sujet en croissance est une opportunité. Méthode 3 : demande directement. Contacte 5 à 10 personnes de ta cible. Pose cette question simple : quel est ton problème numéro un avec tel sujet ? Les réponses que tu reçois sont du contenu d'eBook tout fait. Méthode 4 : Amazon. Cherche des livres dans ta thématique. Lis les avis 1 et 2 étoiles. Ces mauvais avis te disent ce qui manque dans les livres existants. C'est exactement ce que tu vas créer.",
+
+  'm3-2': "Leçon 3.2. Écrire et structurer ton eBook avec l'IA. Voici le processus exact qui te permet de produire un eBook de 30 à 60 pages en 48 à 72 heures. Session 1, durée une heure : crée le plan. Dis à Claude ou ChatGPT : crée un plan détaillé de 8 chapitres pour un eBook intitulé ton titre, pour ton audience cible. Inclus pour chaque chapitre le titre, 3 à 4 points clés, et un exercice pratique. Tu reçois un plan professionnel en quelques secondes. Session 2, durée deux heures : génère le contenu chapitre par chapitre. Pour chaque chapitre, dis à l'IA : rédige le chapitre 1 de cet eBook en 500 mots, avec un ton engageant, des exemples concrets et des conseils actionnables. Session 3, durée une heure : personnalise et améliore. Relis tout le contenu. Ajoute tes expériences personnelles. Corrige le ton pour qu'il te ressemble. C'est cette personnalisation qui rend ton eBook unique. Session 4, durée une heure : mise en page et export. Copie le contenu dans Canva. Choisis un modèle d'eBook professionnel. Ajoute ta couverture, tes couleurs, ton logo. Exporte en PDF haute qualité. Ton eBook est prêt à être vendu.",
+
+  'm3-3': "Leçon 3.3. Mise en page et publication de ton eBook. La mise en page, c'est ce qui transforme un simple document texte en produit premium que les gens sont fiers d'acheter. Voici les étapes exactes. Étape 1 : ouvre Canva et cherche un modèle d'eBook. Choisis un modèle professionnel qui correspond à ton thème. Les modèles sombres avec accents dorés fonctionnent très bien pour les sujets business et digital. Étape 2 : personnalise la couverture. Le titre doit être grand et lisible. L'image de couverture doit être forte et professionnelle. Utilise Midjourney ou DALL-E pour créer une image unique si nécessaire. Étape 3 : mets en page le contenu. Utilise des titres clairs. Ajoute des encadrés pour les points importants. Utilise des listes à puces. Intègre des espaces visuels. Un eBook bien mis en page est lu deux fois plus qu'un document dense. Étape 4 : exporte en PDF haute qualité. Dans Canva, clique sur Partager, puis Télécharger, puis PDF standard ou PDF pour impression. Étape 5 : publie sur Gumroad ou Payhip. Crée ton produit, rédige une description avec l'aide de l'IA, fixe ton prix, et clique sur Publier. Félicitations, ton premier produit digital est en vente.",
+
+  'm4-1': "Leçon 4.1. L'univers des produits digitaux. Un eBook est un excellent point de départ. Mais l'univers des produits digitaux est bien plus vaste. Voici les 8 types de produits que tu peux créer avec l'IA. Premier type : l'eBook PDF, de 20 à 80 pages sur un sujet précis. Facile à créer, prix entre 1000 et 15000 francs CFA. Deuxième type : le workbook ou cahier d'exercices pratiques. C'est le complément parfait d'un eBook. Les gens adorent avoir un espace pour noter et pratiquer. Troisième type : la mini-formation vidéo ou audio. 5 à 10 leçons enregistrées. Se vend entre 5000 et 50000 francs. Quatrième type : les templates et modèles. Des fichiers Canva, Word ou Excel prêts à l'emploi. Fort potentiel de revente répétée. Cinquième type : le pack digital. Combinaison d'eBook plus workbook plus audios. Valeur perçue très élevée. Sixième type : le journal ou agenda. Outil de suivi quotidien ou mensuel. Septième type : le programme en ligne. Formation structurée sur 4 à 8 semaines avec accompagnement. Huitième type : le kit IA clé en main. Ensemble de prompts, templates et guides pour utiliser l'IA dans une niche précise. Ce dernier type est particulièrement en demande en ce moment.",
+
+  'm4-2': "Leçon 4.2. Comment packager une offre irrésistible. Un produit seul se vend. Une offre irrésistible se vend à tout le monde. Voici la différence. La formule gagnante est simple : produit principal plus bonus 1 plus bonus 2 plus garantie égale offre irrésistible. Exemple concret. Tu crées un guide sur l'utilisation de l'IA pour les entrepreneurs. Tu le vends à 19 euros. C'est un produit. Maintenant tu ajoutes : bonus 1, 50 prompts IA prêts à l'emploi, valeur perçue 10 euros. Bonus 2, accès à ton groupe privé WhatsApp pendant un mois, valeur perçue 15 euros. Garantie satisfait ou remboursé 7 jours. Pour seulement 19 euros. C'est une offre irrésistible. La valeur perçue est de 44 euros pour un prix de 19 euros. Les gens se disent : c'est évident, j'achète. Pour créer tes bonus, utilise l'IA. Demande à Claude : génère 50 prompts professionnels pour aider les entrepreneurs à utiliser l'IA dans leur activité. Tu as ton premier bonus en 10 minutes. La clé : ta valeur perçue doit toujours être au moins deux fois supérieure à ton prix.",
+
+  'm4-3': "Leçon 4.3. Stratégie de prix et positionnement. Le prix de ton produit envoie un message fort à tes clients potentiels. Un prix trop bas dit : ce n'est pas sérieux. Un prix bien positionné dit : c'est un investissement qui vaut vraiment. Voici les fourchettes de prix recommandées selon le marché africain francophone. Pour un eBook simple de 20 à 40 pages, entre 2000 et 8000 francs CFA. Pour un eBook premium de 50 à 80 pages avec workbook, entre 8000 et 20000 francs. Pour un pack digital avec eBook, workbook et audios, entre 15000 et 35000 francs. Pour une mini-formation de 5 à 10 leçons, entre 25000 et 60000 francs. Pour un programme complet avec accompagnement, entre 75000 et 150000 francs et plus. Ne te sous-estime jamais. Si ton produit résout un vrai problème, il vaut ce prix. Le test ultime du bon prix : est-ce que quelqu'un qui a vraiment ce problème penserait que c'est cher ? Si la réponse est non, ton prix est juste. Commence avec un prix d'entrée pour collecter des témoignages. Puis augmente progressivement au fur et à mesure que la preuve sociale s'accumule.",
+
+  'm5-1': "Leçon 5.1. Les options pour créer ta plateforme. Pour vendre un produit digital, tu as besoin d'une présence en ligne. Voici les trois voies principales, de la plus simple à la plus avancée. Option 1 : le no-code avec Gumroad ou Payhip. C'est la voie la plus rapide. Tu crées un compte gratuit, tu ajoutes ton produit avec une description et une image, tu fixes ton prix, et tu es en ligne en moins d'une heure. Gumroad et Payhip gèrent le paiement, la livraison du fichier et même les remboursements automatiquement. C'est la meilleure option pour débuter et faire ta première vente le plus rapidement possible. Option 2 : semi-technique avec Systeme.io, Webflow ou Carrd. Ces outils te donnent plus de contrôle visuel sur l'apparence de ta page. Systeme.io est particulièrement complet et gratuit jusqu'à 2000 contacts. Option 3 : HTML avec l'aide de l'IA. C'est ce que nous avons fait dans cette formation. Tu demandes à l'IA de créer ton site exactement comme tu le veux. Tu héberges gratuitement sur Netlify ou Vercel. Tu as un contrôle total sur chaque aspect de ta plateforme. Ma recommandation : commence par l'option 1 pour vendre rapidement. Évolue vers les options 2 et 3 quand tu as tes premiers revenus.",
+
+  'm5-2': "Leçon 5.2. Créer avec l'IA, c'est plus simple que tu penses. Beaucoup de personnes pensent qu'il faut savoir coder pour créer une plateforme ou un site web. C'est faux. Avec l'IA, tu donnes tes instructions en français, et elle écrit le code à ta place. Voici comment ça fonctionne. Tu ouvres Claude ou ChatGPT. Tu tapes : crée une page web complète et professionnelle pour vendre ma formation sur l'IA. Je veux un design sombre avec des accents dorés, un header avec un grand titre accrocheur, une section qui présente les bénéfices, une section prix avec un bouton d'achat, et un footer. Rends-la responsive pour mobile et desktop. En quelques secondes, l'IA te produit un code HTML complet. Tu copies ce code, tu le colles dans un fichier texte que tu enregistres avec l'extension .html, et tu as une vraie page web. Pour la mettre en ligne, tu vas sur netlify.com, tu crées un compte gratuit, et tu glisses ton fichier dans le dashboard. Ton site est en ligne avec un lien en moins de 5 minutes. Si quelque chose ne te plaît pas dans le design, tu expliques à l'IA ce que tu veux changer, et elle corrige. C'est aussi simple que d'avoir une conversation.",
+
+  'm5-3': "Leçon 5.3. Héberger et lancer ta plateforme en ligne. Ton site ou ta page de vente est prêt. Il faut maintenant le mettre en ligne pour que le monde entier puisse y accéder. Voici les meilleures options d'hébergement gratuit. Option 1 : Netlify. Va sur netlify.com. Crée un compte gratuit avec ton adresse email. Une fois connecté, tu vois un grand espace où il est écrit glissez vos fichiers ici. Tu glisses ton fichier HTML, et en 2 minutes, Netlify te donne un lien du type ton-site.netlify.app. Ton site est en ligne, accessible dans le monde entier, gratuitement. Option 2 : Vercel. Même principe que Netlify. Va sur vercel.com et crée un compte. Option 3 : GitHub Pages. Si tu veux aller plus loin, crée un compte GitHub, crée un dépôt public, uploade tes fichiers, active GitHub Pages dans les paramètres. Pour un nom de domaine personnalisé et professionnel, comme tonfomation.com, Namecheap propose des domaines à partir de 1 euro par an. Un nom de domaine professionnel augmente considérablement la confiance de tes clients potentiels. C'est un investissement minimal pour un impact maximal.",
+
+  'm6-1': "Leçon 6.1. La psychologie de la vente. Avant de parler de techniques, parlons de la bonne façon de penser la vente. La majorité des gens ont peur de vendre parce qu'ils pensent que vendre, c'est forcer quelqu'un à acheter quelque chose dont il n'a pas besoin. C'est complètement faux. Vendre, c'est aider quelqu'un à résoudre un problème. Si tu as créé un produit qui aide vraiment les gens, ne pas le proposer, c'est les priver de cette aide. Pense à ça : si tu avais le remède à un problème qui fait souffrir quelqu'un depuis des années, est-ce que tu le garderais pour toi ? Non. Tu le lui donnerais avec enthousiasme. C'est exactement ça, vendre avec intégrité. La deuxième chose à comprendre sur la psychologie de la vente : les gens n'achètent pas des produits. Ils achètent des transformations. Ils achètent la version d'eux-mêmes après avoir utilisé ton produit. Vends toujours la transformation, jamais le produit. Pas : j'ai un eBook sur l'IA. Mais plutôt : dans 30 jours, tu sauras créer et vendre ton premier produit digital grâce à l'IA. La troisième vérité : la peur du non est normale. Les meilleurs vendeurs au monde ont reçu des centaines de non avant leurs premiers oui. Chaque refus est un entraînement. Chaque non te rapproche d'un oui.",
+
+  'm6-2': "Leçon 6.2. Prospecter sur WhatsApp et les réseaux sociaux. La prospection, c'est l'action d'aller chercher des clients potentiels. Voici la stratégie des 3 cercles qui te permettra de faire ta première vente sans budget publicitaire. Cercle 1 : ton réseau chaud. Ce sont tes amis, ta famille, tes anciens collègues, tes contacts WhatsApp. Ce sont les personnes qui te connaissent et qui ont confiance en toi. Commence par eux. Envoie un message naturel : j'ai créé quelque chose qui pourrait t'intéresser. Pas de pression, juste une conversation. Cercle 2 : tes connexions digitales. Ce sont tes abonnés sur Facebook, Instagram, LinkedIn. Les membres des groupes WhatsApp dont tu fais partie. Partage du contenu de valeur sur le sujet de ton produit. Parle de ce que tu apprends. Les gens intéressés vont naturellement te contacter. Cercle 3 : la prospection directe. Identifie des personnes ou des entreprises qui ont exactement le problème que ton produit résout. Envoie-leur un message personnalisé. La structure parfaite du message de prospection est : une connexion personnelle, une observation sur leur situation, le problème qu'ils ont probablement, ta solution, et une question ouverte simple. Ne vends pas dans le premier message. Engage la conversation.",
+
+  'm6-3': "Leçon 6.3. Closer avec confiance et faire ta première vente. Le closing, c'est le moment où tu transformes un intérêt en achat. La majorité des ventes échouent non pas parce que le produit n'est pas bon, mais parce que le vendeur a peur de demander la vente. Voici la vérité : si tu ne demandes pas, la réponse est toujours non. Voici la méthode simple pour closer avec confiance. Étape 1 : présente ta valeur clairement. Explique ce que la personne va obtenir exactement. Pas en termes de contenu, mais en termes de résultats. Au lieu de dire il y a 6 modules, dis dans 30 jours tu auras les compétences pour créer et vendre ton premier produit digital. Étape 2 : annonce ton prix calmement. Ne t'excuse jamais de ton prix. Dis-le avec confiance : le prix est de X francs. Puis tais-toi. Le silence est puissant. Étape 3 : gère les objections avec empathie. Les objections les plus courantes sont : c'est trop cher, j'ai pas le temps, je vais réfléchir. Pour chaque objection, écoute, valide le ressenti de la personne, puis réponds avec une preuve ou une question. Étape 4 : donne une raison d'agir maintenant. Une offre limitée dans le temps, un bonus supplémentaire pour les 10 premiers acheteurs, un prix spécial de lancement. Félicitations. Tu as maintenant tout ce qu'il te faut pour vendre."
+};
+
+let AP_current_id = null;   // id en cours de lecture (speech)
+let AP_speech_ut  = null;   // utterance actuelle
+let AP_timers     = {};     // intervalles de timer
+let AP_start_ts   = {};     // timestamp de début de lecture
+let AP_elapsed    = {};     // secondes écoulées
+
+// ---- Initialisation des voix (async sur certains navigateurs) ----
+let VOICES_READY = false;
+function ensureVoices(cb) {
+  const voices = window.speechSynthesis.getVoices();
+  if (voices.length > 0) { VOICES_READY = true; cb(voices); return; }
+  window.speechSynthesis.onvoiceschanged = () => {
+    VOICES_READY = true;
+    cb(window.speechSynthesis.getVoices());
+  };
+}
+
+function apToggle(id) {
+  if (!window.speechSynthesis) {
+    notify('⚠ Ton navigateur ne supporte pas la synthèse vocale. Utilise Chrome ou Safari.');
+    return;
+  }
+
+  // Certains navigateurs suspendent speechSynthesis — on le réveille
+  if (window.speechSynthesis.paused) {
+    window.speechSynthesis.resume();
+  }
+
+  // Si cet audio est en cours → stop
+  if (AP_current_id === id) {
+    window.speechSynthesis.cancel();
+    apSetStopped(id);
+    return;
+  }
+
+  // Arrête tout autre audio en cours
+  if (AP_current_id && AP_current_id !== id) {
+    window.speechSynthesis.cancel();
+    apSetStopped(AP_current_id);
+  }
+
+  const text = AUDIO_TEXTS[id];
+  if (!text) { notify('⚠ Texte audio introuvable.'); return; }
+
+  // Charge les voix — async sur certains navigateurs (Android Chrome)
+  const trySpeak = (voices) => {
+    AP_speech_ut = new SpeechSynthesisUtterance(text);
+    AP_speech_ut.lang   = 'fr-FR';
+    AP_speech_ut.rate   = 0.88;
+    AP_speech_ut.pitch  = 1.0;
+    AP_speech_ut.volume = 1.0;
+
+    // Cherche la meilleure voix française disponible
+    const frVoices = (voices || []).filter(v => v.lang && v.lang.startsWith('fr'));
+    const preferred = frVoices.find(v => /amelie|thomas|marie|claire|juliette/i.test(v.name))
+                   || frVoices[0]
+                   || null;
+    if (preferred) AP_speech_ut.voice = preferred;
+
+    AP_speech_ut.onstart = () => {
+      AP_current_id = id;
+      AP_elapsed[id] = AP_elapsed[id] || 0;
+      AP_start_ts[id] = Date.now();
+      apSetPlaying(id);
+      apStartProgressTimer(id);
+    };
+
+    AP_speech_ut.onend = () => {
+      AP_elapsed[id] = 0;
+      apSetStopped(id);
+      const fill = document.getElementById('fill-' + id);
+      if (fill) fill.style.width = '100%';
+      setTimeout(() => {
+        const f2 = document.getElementById('fill-' + id);
+        const t2 = document.getElementById('timer-' + id);
+        if (f2) f2.style.width = '0%';
+        if (t2) t2.textContent = '0:00';
+        AP_elapsed[id] = 0;
+      }, 1200);
+    };
+
+    AP_speech_ut.onerror = (e) => {
+      console.warn('Speech error:', e.error);
+      apSetStopped(id);
+      if (e.error !== 'interrupted') {
+        notify('⚠ Erreur audio. Réessaie ou vérifie le volume de ton appareil.');
+      }
+    };
+
+    window.speechSynthesis.speak(AP_speech_ut);
+  };
+
+  // Voix disponibles immédiatement ou en attente
+  const voices = window.speechSynthesis.getVoices();
+  if (voices.length > 0) {
+    trySpeak(voices);
+  } else {
+    // Android Chrome charge les voix en async
+    window.speechSynthesis.onvoiceschanged = () => {
+      trySpeak(window.speechSynthesis.getVoices());
+    };
+    // Tente quand même avec voix par défaut
+    trySpeak([]);
+  }
+}
+
+function apSetPlaying(id) {
+  const btn  = document.getElementById('btn-' + id);
+  const card = document.getElementById('card-' + id);
+  if (btn)  { btn.textContent = '⏸'; btn.classList.add('active'); }
+  if (card) card.classList.add('playing');
+}
+
+function apSetStopped(id) {
+  const btn  = document.getElementById('btn-' + id);
+  const card = document.getElementById('card-' + id);
+  if (btn)  { btn.textContent = '▶'; btn.classList.remove('active'); }
+  if (card) card.classList.remove('playing');
+  apClearProgressTimer(id);
+  if (AP_current_id === id) AP_current_id = null;
+  // Sauvegarde le temps écoulé
+  if (AP_start_ts[id]) {
+    AP_elapsed[id] = (AP_elapsed[id] || 0) + Math.floor((Date.now() - AP_start_ts[id]) / 1000);
+    AP_start_ts[id] = null;
+  }
+}
+
+// Timer visuel (estimation basée sur le temps réel car SpeechSynthesis n'expose pas de currentTime)
+function apStartProgressTimer(id) {
+  apClearProgressTimer(id);
+  // Durée estimée = nb de mots * 0.55 secondes (débit ~108 mots/min à rate 0.88)
+  const text = AUDIO_TEXTS[id] || '';
+  const words = text.split(/\s+/).length;
+  const estimatedDuration = Math.round(words * 0.55);
+
+  AP_timers[id] = setInterval(() => {
+    if (!AP_start_ts[id]) return;
+    const totalElapsed = (AP_elapsed[id] || 0) + Math.floor((Date.now() - AP_start_ts[id]) / 1000);
+    const pct = Math.min(100, (totalElapsed / estimatedDuration) * 100);
+
+    const fill  = document.getElementById('fill-' + id);
+    const timer = document.getElementById('timer-' + id);
+    if (fill)  fill.style.width = pct + '%';
+    if (timer) timer.textContent = apFmtTime(totalElapsed) + ' / ' + apFmtTime(estimatedDuration);
+  }, 500);
+}
+
+function apClearProgressTimer(id) {
+  if (AP_timers[id]) { clearInterval(AP_timers[id]); AP_timers[id] = null; }
+}
+
+function apFmtTime(s) {
+  if (!s || isNaN(s)) return '0:00';
+  const m = Math.floor(s / 60);
+  const sec = Math.floor(s % 60);
+  return m + ':' + (sec < 10 ? '0' : '') + sec;
+}
+
+// Seek non applicable avec SpeechSynthesis — on restart du début
+function apSeek(event, id) {
+  if (AP_current_id === id && window.speechSynthesis.speaking) {
+    window.speechSynthesis.cancel();
+    AP_elapsed[id] = 0;
+    apSetStopped(id);
+    setTimeout(() => apToggle(id), 150);
+  }
+}
+
+// Volume (garde le contrôle pour quand des vrais MP3 seront ajoutés)
+function apVol(event, id) {
+  const volBar  = document.getElementById('vol-' + id);
+  const volFill = document.getElementById('volfill-' + id);
+  if (!volBar) return;
+  const rect = volBar.getBoundingClientRect();
+  const pct  = Math.max(0, Math.min(1, (event.clientX - rect.left) / rect.width));
+  if (volFill) volFill.style.width = (pct * 100) + '%';
+  if (AP_speech_ut) AP_speech_ut.volume = pct;
+}
+
+// Compatibilité ascendante — ancien bouton fallback (désormais inutile mais conservé)
+function apSpeech(id, text) { apToggle(id); }
+
+// ============================================================
+// EXAM
+// ============================================================
+const EXAM_QUESTIONS = [
+  { q: "Que signifie 'IA' dans le contexte technologique ?", options: ["Intelligence Artificielle", "Intelligence Automatique", "Information Avancée", "Interface Applicative"], correct: 0 },
+  { q: "Quel outil IA est particulièrement recommandé pour créer du contenu textuel long comme un eBook ?", options: ["Midjourney", "Claude ou ChatGPT", "Runway", "Canva"], correct: 1 },
+  { q: "Quelle est la première étape pour créer un eBook qui se vend bien ?", options: ["Choisir une belle couverture", "Trouver un vrai problème du marché", "Choisir la police de caractères", "Fixer le prix"], correct: 1 },
+  { q: "Quel outil est idéal pour créer des images professionnelles avec l'IA ?", options: ["ElevenLabs", "Claude", "Midjourney / DALL-E", "Systeme.io"], correct: 2 },
+  { q: "Pour héberger et vendre un produit digital gratuitement, quelle plateforme est recommandée pour débuter ?", options: ["Amazon AWS", "Gumroad ou Payhip", "Shopify", "WooCommerce"], correct: 1 },
+  { q: "La 'stratégie des 3 cercles' pour trouver des clients commence par quoi ?", options: ["La publicité payante", "Le SEO", "Ton réseau chaud (famille, amis)", "LinkedIn"], correct: 2 },
+  { q: "Quel outil permet de créer des voix synthétiques ultra-réalistes pour des audios de formation ?", options: ["Canva", "ElevenLabs", "Notion", "Trello"], correct: 1 },
+  { q: "Quelle est la formule d'une offre irrésistible ?", options: ["Produit principal seulement", "Produit + bonus + garantie", "Produit + prix bas", "Aucune formule n'existe"], correct: 1 },
+  { q: "Quand tu prospectes avec un message, que dois-tu toujours vendre en priorité ?", options: ["Le produit", "La transformation / le résultat", "Le prix", "Ta biographie"], correct: 1 },
+  { q: "Comment l'IA peut-elle t'aider à créer une plateforme web ?", options: ["Elle ne peut pas aider avec le code", "En générant du code HTML/CSS selon tes instructions précises", "Seulement pour le design", "En hébergeant le site automatiquement"], correct: 1 },
+  { q: "Quelle erreur courante les débutants commettent-ils avec l'IA ?", options: ["L'utiliser trop souvent", "Penser que c'est trop complexe et ne pas commencer", "Créer trop de produits", "Facturer trop cher"], correct: 1 },
+  { q: "En résumé, quel est le principe fondamental pour dominer l'IA selon cette formation ?", options: ["Laisser l'IA décider seule", "Être un spectateur passif", "Donner des ordres précis à l'IA et en rester le directeur", "Copier ce que font les autres"], correct: 2 },
+];
+
+let userAnswers = {};
+
+function buildExam() {
+  const container = document.getElementById('examQuestions');
+  container.innerHTML = '';
+  userAnswers = {};
+
+  EXAM_QUESTIONS.forEach((q, i) => {
+    const div = document.createElement('div');
+    div.className = 'exam-question';
+    div.innerHTML = `
+      <div class="question-num">Question ${i+1} sur ${EXAM_QUESTIONS.length}</div>
+      <div class="question-text">${q.q}</div>
+      <div class="exam-options" id="opts-${i}">
+        ${q.options.map((opt, j) => `
+          <button class="exam-option" onclick="selectExamAnswer(${i}, ${j}, this)">
+            <span class="option-letter">${String.fromCharCode(65+j)}</span>
+            ${opt}
+          </button>
+        `).join('')}
+      </div>
+    `;
+    container.appendChild(div);
+  });
+}
+
+function selectExamAnswer(qIdx, optIdx, btn) {
+  document.querySelectorAll(`#opts-${qIdx} .exam-option`).forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  userAnswers[qIdx] = optIdx;
+}
+
+function submitExam() {
+  const answered = Object.keys(userAnswers).length;
+  if (answered < EXAM_QUESTIONS.length) {
+    notify(`⚠ Réponds à toutes les questions (${answered}/${EXAM_QUESTIONS.length} répondues)`);
+    return;
+  }
+
+  let correct = 0;
+  EXAM_QUESTIONS.forEach((q, i) => {
+    const opts = document.querySelectorAll(`#opts-${i} .exam-option`);
+    opts.forEach((btn, j) => {
+      if (j === q.correct) btn.classList.add('correct');
+      else if (j === userAnswers[i] && userAnswers[i] !== q.correct) btn.classList.add('wrong');
+    });
+    if (userAnswers[i] === q.correct) correct++;
+  });
+
+  const score = Math.round((correct / EXAM_QUESTIONS.length) * 100);
+  STATE.examScore = score;
+  saveState();
+
+  const passed = score >= 70;
+  document.getElementById('examActions').style.display = 'none';
+  document.getElementById('examQuestions').style.opacity = '0.4';
+  document.getElementById('examQuestions').style.pointerEvents = 'none';
+
+  const result = document.getElementById('examResult');
+  result.classList.add('show');
+  document.getElementById('resultIcon').textContent = passed ? '🏆' : '💪';
+  document.getElementById('resultScore').textContent = score + '%';
+  document.getElementById('resultText').textContent = passed ? 'Félicitations !' : 'Presque là !';
+
+  if (passed) {
+    document.getElementById('resultDesc').textContent = `Exceptionnel ! Tu as obtenu ${score}% (${correct}/${EXAM_QUESTIONS.length} bonnes réponses). Tu maîtrises maintenant les bases de l'intelligence artificielle. Entre ton nom pour recevoir ton certificat officiel.`;
+    STATE.completedModules.push(7);
+    saveState();
+    updateProgress();
+    renderDashboard();
+    document.getElementById('resultActions').innerHTML = `
+      <div class="name-form">
+        <input type="text" id="certFirstName" placeholder="Ton prénom" />
+        <input type="text" id="certLastName" placeholder="Ton nom de famille" />
+        <button class="btn-generate" onclick="generateDiploma()">✦ Générer mon Certificat ✦</button>
+      </div>
+    `;
+  } else {
+    document.getElementById('resultDesc').textContent = `Tu as obtenu ${score}% (${correct}/${EXAM_QUESTIONS.length}). Il te faut 70% minimum pour valider. Reviens sur les modules et réessaie !`;
+    document.getElementById('resultActions').innerHTML = `
+      <button class="btn-complete-module" onclick="retryExam()" style="margin-top:16px">↻ Recommencer l'examen</button>
+    `;
+  }
+}
+
+function retryExam() {
+  document.getElementById('examResult').classList.remove('show');
+  document.getElementById('examActions').style.display = 'flex';
+  document.getElementById('examQuestions').style.opacity = '1';
+  document.getElementById('examQuestions').style.pointerEvents = 'auto';
+  userAnswers = {};
+  buildExam();
+  window.scrollTo(0, 0);
+}
+
+// ============================================================
+// DIPLOMA GENERATION
+// ============================================================
+function generateDiploma() {
+  const first = document.getElementById('certFirstName')?.value?.trim();
+  const last = document.getElementById('certLastName')?.value?.trim();
+
+  if (!first || !last) {
+    notify('⚠ Entre ton prénom ET ton nom de famille');
+    return;
+  }
+
+  STATE.userName = first + ' ' + last.toUpperCase();
+  saveState();
+
+  showView('diploma');
+  setTimeout(() => drawDiploma(STATE.userName, STATE.examScore), 100);
+}
+
+function drawDiploma(name, score) {
+  const canvas = document.getElementById('diplomaCanvas');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+
+  // Background — Deep luxury black
+  ctx.fillStyle = '#06060C';
+  ctx.fillRect(0, 0, W, H);
+
+  // Radial glow center
+  const glow = ctx.createRadialGradient(W/2, H/2, 50, W/2, H/2, 500);
+  glow.addColorStop(0, 'rgba(201,168,76,0.07)');
+  glow.addColorStop(1, 'transparent');
+  ctx.fillStyle = glow;
+  ctx.fillRect(0, 0, W, H);
+
+  // Outer border — thick gold
+  ctx.strokeStyle = '#C9A84C';
+  ctx.lineWidth = 3;
+  ctx.strokeRect(24, 24, W - 48, H - 48);
+
+  // Inner border — thin
+  ctx.strokeStyle = 'rgba(201,168,76,0.35)';
+  ctx.lineWidth = 1;
+  ctx.strokeRect(36, 36, W - 72, H - 72);
+
+  // Corner ornaments
+  const corners = [[44, 44], [W-44, 44], [44, H-44], [W-44, H-44]];
+  corners.forEach(([x, y]) => {
+    ctx.strokeStyle = '#C9A84C';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    const s = 22;
+    if (x < W/2 && y < H/2) { ctx.moveTo(x, y+s); ctx.lineTo(x, y); ctx.lineTo(x+s, y); }
+    else if (x > W/2 && y < H/2) { ctx.moveTo(x-s, y); ctx.lineTo(x, y); ctx.lineTo(x, y+s); }
+    else if (x < W/2 && y > H/2) { ctx.moveTo(x, y-s); ctx.lineTo(x, y); ctx.lineTo(x+s, y); }
+    else { ctx.moveTo(x-s, y); ctx.lineTo(x, y); ctx.lineTo(x, y-s); }
+    ctx.stroke();
+  });
+
+  // Top decorative line with diamond
+  ctx.strokeStyle = 'rgba(201,168,76,0.3)';
+  ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(80, 120); ctx.lineTo(W/2 - 40, 120); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(W/2 + 40, 120); ctx.lineTo(W - 80, 120); ctx.stroke();
+  // Diamond
+  ctx.fillStyle = '#C9A84C';
+  ctx.save();
+  ctx.translate(W/2, 120);
+  ctx.rotate(Math.PI/4);
+  ctx.fillRect(-7, -7, 14, 14);
+  ctx.restore();
+
+  // ACADÉMIE IA — top badge
+  ctx.fillStyle = '#C9A84C';
+  ctx.font = '500 13px Outfit, sans-serif';
+  ctx.letterSpacing = '6px';
+  ctx.textAlign = 'center';
+  ctx.fillText('A C A D É M I E   D I G I T A L E   I A', W/2, 90);
+
+  // CERTIFICAT DE RÉUSSITE
+  ctx.font = 'italic 300 64px "Cormorant Garamond", serif';
+  ctx.fillStyle = '#F0EDE8';
+  ctx.textAlign = 'center';
+  ctx.fillText('Certificat de Réussite', W/2, 210);
+
+  // Decorative line under title
+  const grad = ctx.createLinearGradient(W/2 - 200, 0, W/2 + 200, 0);
+  grad.addColorStop(0, 'transparent');
+  grad.addColorStop(0.5, '#C9A84C');
+  grad.addColorStop(1, 'transparent');
+  ctx.strokeStyle = grad;
+  ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.moveTo(W/2 - 200, 230); ctx.lineTo(W/2 + 200, 230); ctx.stroke();
+
+  // "Décerné à"
+  ctx.font = '300 16px Outfit, sans-serif';
+  ctx.fillStyle = 'rgba(154,146,128,0.9)';
+  ctx.letterSpacing = '3px';
+  ctx.fillText('D É C E R N É   À', W/2, 290);
+
+  // NAME — big gold
+  ctx.font = '600 62px "Cormorant Garamond", serif';
+  ctx.fillStyle = '#E8C97A';
+  ctx.letterSpacing = '2px';
+  ctx.fillText(name, W/2, 372);
+
+  // Underline name
+  const nameWidth = ctx.measureText(name).width;
+  const ug = ctx.createLinearGradient(W/2 - nameWidth/2, 0, W/2 + nameWidth/2, 0);
+  ug.addColorStop(0, 'transparent');
+  ug.addColorStop(0.3, '#C9A84C');
+  ug.addColorStop(0.7, '#C9A84C');
+  ug.addColorStop(1, 'transparent');
+  ctx.strokeStyle = ug;
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(W/2 - nameWidth/2, 388);
+  ctx.lineTo(W/2 + nameWidth/2, 388);
+  ctx.stroke();
+
+  // "Pour avoir complété avec succès"
+  ctx.font = '300 16px Outfit, sans-serif';
+  ctx.fillStyle = 'rgba(154,146,128,0.9)';
+  ctx.letterSpacing = '1px';
+  ctx.fillText('pour avoir complété avec succès la formation', W/2, 440);
+
+  // Formation title
+  ctx.font = 'italic 600 32px "Cormorant Garamond", serif';
+  ctx.fillStyle = '#F0EDE8';
+  ctx.letterSpacing = '0px';
+  ctx.fillText('"Dominer l\'Intelligence Artificielle"', W/2, 492);
+
+  // Score band
+  const scoreBg = ctx.createLinearGradient(W/2 - 150, 0, W/2 + 150, 0);
+  scoreBg.addColorStop(0, 'rgba(201,168,76,0.03)');
+  scoreBg.addColorStop(0.5, 'rgba(201,168,76,0.09)');
+  scoreBg.addColorStop(1, 'rgba(201,168,76,0.03)');
+  ctx.fillStyle = scoreBg;
+  ctx.fillRect(W/2 - 150, 515, 300, 52);
+  ctx.strokeStyle = 'rgba(201,168,76,0.25)';
+  ctx.lineWidth = 1;
+  ctx.strokeRect(W/2 - 150, 515, 300, 52);
+
+  ctx.font = '400 13px Outfit, sans-serif';
+  ctx.fillStyle = '#C9A84C';
+  ctx.letterSpacing = '2px';
+  ctx.fillText('SCORE FINAL : ' + score + '%  ·  MENTION EXCELLENCE', W/2, 546);
+
+  // Date
+  const now = new Date();
+  const dateStr = now.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+  ctx.font = '300 13px Outfit, sans-serif';
+  ctx.fillStyle = 'rgba(154,146,128,0.7)';
+  ctx.letterSpacing = '1px';
+  ctx.fillText('Délivré le ' + dateStr, W/2, 600);
+
+  // Bottom separator
+  ctx.strokeStyle = 'rgba(201,168,76,0.2)';
+  ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(120, 630); ctx.lineTo(W - 120, 630); ctx.stroke();
+
+  // Signature area — Left
+  ctx.font = 'italic 300 16px "Cormorant Garamond", serif';
+  ctx.fillStyle = '#C9A84C';
+  ctx.textAlign = 'center';
+  ctx.letterSpacing = '0px';
+  ctx.fillText('Directrice Académique', 280, 720);
+
+  // Signature scribble — Left
+  ctx.strokeStyle = 'rgba(201,168,76,0.6)';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.moveTo(200, 690); ctx.bezierCurveTo(220, 675, 250, 685, 265, 678);
+  ctx.bezierCurveTo(280, 670, 310, 680, 330, 670);
+  ctx.bezierCurveTo(345, 663, 355, 672, 360, 668);
+  ctx.stroke();
+  ctx.strokeStyle = 'rgba(201,168,76,0.3)';
+  ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(210, 700); ctx.lineTo(350, 700); ctx.stroke();
+
+  // Stamp / Seal — Right
+  ctx.save();
+  ctx.translate(W - 200, 690);
+  // Outer circle
+  ctx.strokeStyle = 'rgba(201,168,76,0.5)';
+  ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.arc(0, 0, 55, 0, Math.PI*2); ctx.stroke();
+  // Inner circle
+  ctx.strokeStyle = 'rgba(201,168,76,0.25)';
+  ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.arc(0, 0, 44, 0, Math.PI*2); ctx.stroke();
+  // Star center
+  ctx.fillStyle = 'rgba(201,168,76,0.8)';
+  ctx.font = '28px serif';
+  ctx.textAlign = 'center';
+  ctx.letterSpacing = '0';
+  ctx.fillText('★', 0, 10);
+  // Text around
+  ctx.font = '500 8.5px Outfit, sans-serif';
+  ctx.fillStyle = 'rgba(201,168,76,0.7)';
+  ctx.letterSpacing = '2px';
+  const text = 'ACADÉMIE IA · CERTIFIÉ · EXCELLENCE ·';
+  const total = text.length;
+  for (let i = 0; i < total; i++) {
+    const angle = (i / total) * Math.PI * 2 - Math.PI/2;
+    ctx.save();
+    ctx.rotate(angle);
+    ctx.translate(0, -36);
+    ctx.rotate(Math.PI/2);
+    ctx.fillText(text[i], 0, 0);
+    ctx.restore();
+  }
+  ctx.restore();
+
+  // Signature label right
+  ctx.font = 'italic 300 16px "Cormorant Garamond", serif';
+  ctx.fillStyle = '#C9A84C';
+  ctx.textAlign = 'center';
+  ctx.fillText('Certification Officielle', W - 200, 760);
+
+  // Bottom quote
+  ctx.font = 'italic 300 15px "Cormorant Garamond", serif';
+  ctx.fillStyle = 'rgba(154,146,128,0.5)';
+  ctx.textAlign = 'center';
+  ctx.letterSpacing = '1px';
+  ctx.fillText('"Le futur appartient à ceux qui dominent l\'IA."', W/2, 810);
+}
+
+function downloadDiploma() {
+  const canvas = document.getElementById('diplomaCanvas');
+  const link = document.createElement('a');
+  link.download = 'Certificat-IA-' + (STATE.userName || 'Formation').replace(/\s+/g, '-') + '.png';
+  link.href = canvas.toDataURL('image/png', 1.0);
+  link.click();
+  notify('⬇ Certificat téléchargé !');
+}
+
+// ============================================================
+// NOTIFICATION
+// ============================================================
+function notify(msg) {
+  const el = document.getElementById('notification');
+  document.getElementById('notificationText').textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 3500);
+}
+
+// ============================================================
+// SIDEBAR MOBILE
+// ============================================================
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sidebarOverlay').classList.toggle('show');
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebarOverlay').classList.remove('show');
+}
+
+// ============================================================
+// RESTORE STATE ON LOAD
+// ============================================================
+window.addEventListener('DOMContentLoaded', () => {
+  // Unlock completed modules
+  STATE.completedModules.forEach(num => {
+    const info = MODULES_MAP[num];
+    if (info) {
+      const navEl = document.getElementById(info.navKey);
+      if (navEl) {
+        navEl.classList.remove('locked');
+        navEl.onclick = () => showView(info.next);
+        navEl.querySelector('.nav-lock') && navEl.querySelector('.nav-lock').remove();
+      }
+    }
+    // Mark nav as completed
+    const navKey = num === 7 ? 'nav-exam' : 'nav-m' + num;
+    const navEl = document.getElementById(navKey);
+    if (navEl) navEl.classList.add('completed');
+  });
+
+  updateProgress();
+  renderDashboard();
+  buildExam(); // Pre-build exam
+
+  // Restore textarea values
+  Object.entries(STATE.answers).forEach(([k, v]) => {
+    const el = document.getElementById(k.replace('M', 'ex').toLowerCase());
+    if (el && el.tagName === 'TEXTAREA') el.value = v;
+  });
+});
+</script>
+</body>
+</html>
