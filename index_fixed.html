@@ -1,0 +1,1419 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dominer l'Intelligence Artificielle — Académie Premium</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400&family=Outfit:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --gold: #C9A84C;
+    --gold-light: #E8C97A;
+    --gold-dim: #8B6A28;
+    --obsidian: #050505;
+    --deep: #0A0A0F;
+    --surface: #0F0F18;
+    --surface2: #16161F;
+    --surface3: #1E1E2A;
+    --text: #F0EDE8;
+    --text-dim: #9A9280;
+    --text-muted: #5A5550;
+    --accent: #6B4EFF;
+    --accent2: #FF6B35;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Outfit', sans-serif;
+    background: var(--obsidian);
+    color: var(--text);
+    overflow-x: hidden;
+    cursor: none;
+  }
+
+  /* Custom cursor */
+  .cursor {
+    width: 8px; height: 8px;
+    background: var(--gold);
+    border-radius: 50%;
+    position: fixed;
+    pointer-events: none;
+    z-index: 9999;
+    transition: transform 0.1s;
+    mix-blend-mode: difference;
+  }
+  .cursor-ring {
+    width: 32px; height: 32px;
+    border: 1px solid rgba(201,168,76,0.4);
+    border-radius: 50%;
+    position: fixed;
+    pointer-events: none;
+    z-index: 9998;
+    transition: transform 0.15s, width 0.3s, height 0.3s;
+  }
+
+  /* Grain overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 9997;
+    opacity: 0.4;
+  }
+
+  /* NAV */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    padding: 24px 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: linear-gradient(to bottom, rgba(5,5,5,0.95), transparent);
+  }
+  .nav-logo {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.1rem;
+    letter-spacing: 0.2em;
+    color: var(--gold);
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+  .nav-cta {
+    background: linear-gradient(135deg, var(--gold), var(--gold-dim));
+    color: var(--obsidian);
+    padding: 10px 28px;
+    font-family: 'Outfit', sans-serif;
+    font-weight: 600;
+    font-size: 0.82rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+    transition: all 0.3s;
+    clip-path: polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%);
+  }
+  .nav-cta:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(201,168,76,0.3); }
+
+  /* HERO */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    padding: 120px 40px 80px;
+    text-align: center;
+  }
+
+  .hero-bg {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 80% 60% at 50% 30%, rgba(201,168,76,0.07) 0%, transparent 70%),
+      radial-gradient(ellipse 50% 40% at 20% 80%, rgba(107,78,255,0.05) 0%, transparent 60%),
+      radial-gradient(ellipse 40% 30% at 80% 70%, rgba(255,107,53,0.04) 0%, transparent 50%);
+  }
+
+  .hero-lines {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(201,168,76,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(201,168,76,0.03) 1px, transparent 1px);
+    background-size: 60px 60px;
+    mask-image: radial-gradient(ellipse 70% 70% at 50% 50%, black, transparent);
+  }
+
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    border: 1px solid rgba(201,168,76,0.3);
+    padding: 7px 20px;
+    font-size: 0.72rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 40px;
+    position: relative;
+    animation: fadeDown 1s ease both;
+    background: rgba(201,168,76,0.04);
+  }
+  .hero-badge::before, .hero-badge::after {
+    content: '◆';
+    font-size: 0.5rem;
+    opacity: 0.6;
+  }
+
+  .hero-eyebrow {
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.75rem;
+    letter-spacing: 0.4em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 24px;
+    animation: fadeDown 1s 0.1s ease both;
+  }
+
+  .hero-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(3.5rem, 8vw, 7.5rem);
+    line-height: 0.95;
+    font-weight: 300;
+    letter-spacing: -0.02em;
+    margin-bottom: 16px;
+    animation: fadeDown 1s 0.2s ease both;
+  }
+  .hero-title .line2 {
+    font-style: italic;
+    background: linear-gradient(135deg, var(--gold-light), var(--gold), var(--gold-dim));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    display: block;
+  }
+
+  .hero-subtitle {
+    font-size: 1.05rem;
+    color: var(--text-dim);
+    max-width: 580px;
+    line-height: 1.7;
+    margin: 24px auto 48px;
+    font-weight: 300;
+    animation: fadeDown 1s 0.35s ease both;
+  }
+
+  .hero-actions {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    flex-wrap: wrap;
+    animation: fadeDown 1s 0.5s ease both;
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, var(--gold-light), var(--gold));
+    color: var(--obsidian);
+    padding: 16px 44px;
+    font-weight: 700;
+    font-size: 0.88rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+    transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+    position: relative;
+    overflow: hidden;
+  }
+  .btn-primary::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, white, var(--gold-light));
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .btn-primary:hover { transform: translateY(-3px); box-shadow: 0 20px 60px rgba(201,168,76,0.35); }
+  .btn-primary:hover::before { opacity: 0.15; }
+  .btn-primary span { position: relative; z-index: 1; }
+
+  .btn-secondary {
+    background: transparent;
+    color: var(--text);
+    padding: 16px 36px;
+    font-size: 0.88rem;
+    letter-spacing: 0.1em;
+    border: 1px solid rgba(240,237,232,0.2);
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+    transition: all 0.3s;
+  }
+  .btn-secondary:hover { border-color: var(--gold); color: var(--gold); }
+
+  .hero-scroll {
+    position: absolute;
+    bottom: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-muted);
+    font-size: 0.7rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    animation: fadeDown 1s 0.8s ease both;
+  }
+  .scroll-line {
+    width: 1px;
+    height: 50px;
+    background: linear-gradient(to bottom, var(--gold), transparent);
+    animation: scrollLine 2s ease-in-out infinite;
+  }
+  @keyframes scrollLine {
+    0%,100% { opacity: 0.3; transform: scaleY(0.8); }
+    50% { opacity: 1; transform: scaleY(1); }
+  }
+
+  /* STATS BAND */
+  .stats-band {
+    border-top: 1px solid rgba(201,168,76,0.1);
+    border-bottom: 1px solid rgba(201,168,76,0.1);
+    background: rgba(201,168,76,0.02);
+    padding: 36px 60px;
+    display: flex;
+    justify-content: center;
+    gap: 80px;
+    flex-wrap: wrap;
+  }
+  .stat-item {
+    text-align: center;
+    opacity: 0;
+    animation: fadeUp 0.8s ease forwards;
+  }
+  .stat-item:nth-child(1) { animation-delay: 0.1s; }
+  .stat-item:nth-child(2) { animation-delay: 0.2s; }
+  .stat-item:nth-child(3) { animation-delay: 0.3s; }
+  .stat-item:nth-child(4) { animation-delay: 0.4s; }
+  .stat-num {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2.8rem;
+    font-weight: 700;
+    color: var(--gold);
+    line-height: 1;
+  }
+  .stat-label {
+    font-size: 0.72rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-top: 6px;
+  }
+
+  /* SECTION GÉNÉRALE */
+  section { position: relative; }
+
+  .section-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 60px;
+  }
+
+  .section-header {
+    text-align: center;
+    margin-bottom: 72px;
+  }
+  .section-tag {
+    display: inline-block;
+    font-size: 0.68rem;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: var(--gold);
+    border: 1px solid rgba(201,168,76,0.25);
+    padding: 5px 16px;
+    margin-bottom: 24px;
+    background: rgba(201,168,76,0.04);
+  }
+  .section-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(2.2rem, 4vw, 3.5rem);
+    font-weight: 300;
+    line-height: 1.15;
+  }
+  .section-title em {
+    font-style: italic;
+    color: var(--gold);
+  }
+  .section-desc {
+    font-size: 1rem;
+    color: var(--text-dim);
+    max-width: 540px;
+    margin: 20px auto 0;
+    line-height: 1.7;
+    font-weight: 300;
+  }
+
+  /* PROMISE SECTION */
+  .promise-section {
+    padding: 120px 0;
+    background: linear-gradient(to bottom, var(--obsidian), var(--deep));
+  }
+
+  .promise-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px;
+    margin-top: 60px;
+  }
+  .promise-card {
+    background: var(--surface);
+    padding: 48px;
+    position: relative;
+    overflow: hidden;
+    transition: background 0.4s;
+  }
+  .promise-card:hover { background: var(--surface2); }
+  .promise-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    opacity: 0;
+    transition: opacity 0.4s;
+  }
+  .promise-card:hover::before { opacity: 1; }
+  .promise-num {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 4rem;
+    font-weight: 700;
+    color: rgba(201,168,76,0.1);
+    position: absolute;
+    top: 20px; right: 30px;
+    line-height: 1;
+  }
+  .promise-icon {
+    font-size: 2rem;
+    margin-bottom: 20px;
+    display: block;
+  }
+  .promise-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 12px;
+    color: var(--text);
+  }
+  .promise-text {
+    font-size: 0.9rem;
+    color: var(--text-dim);
+    line-height: 1.7;
+    font-weight: 300;
+  }
+
+  /* MODULES OVERVIEW */
+  .modules-section {
+    padding: 120px 0;
+    background: var(--deep);
+  }
+
+  .modules-list {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin-top: 60px;
+  }
+  .module-row {
+    display: grid;
+    grid-template-columns: 80px 1fr auto;
+    align-items: center;
+    gap: 32px;
+    padding: 28px 40px;
+    background: var(--surface);
+    border-left: 2px solid transparent;
+    transition: all 0.4s;
+    cursor: default;
+  }
+  .module-row:hover {
+    background: var(--surface2);
+    border-left-color: var(--gold);
+    padding-left: 48px;
+  }
+  .module-num {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--gold-dim);
+    text-align: center;
+  }
+  .module-info h3 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.35rem;
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+  .module-info p {
+    font-size: 0.85rem;
+    color: var(--text-dim);
+    font-weight: 300;
+  }
+  .module-tag {
+    font-size: 0.68rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--gold);
+    border: 1px solid rgba(201,168,76,0.25);
+    padding: 4px 12px;
+    white-space: nowrap;
+    background: rgba(201,168,76,0.04);
+  }
+
+  /* FOR WHO */
+  .forwho-section {
+    padding: 120px 0;
+    background: linear-gradient(to bottom, var(--deep), var(--surface));
+  }
+
+  .forwho-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+    margin-top: 60px;
+  }
+  .forwho-card {
+    padding: 40px 32px;
+    border: 1px solid rgba(255,255,255,0.05);
+    background: rgba(255,255,255,0.02);
+    position: relative;
+    overflow: hidden;
+    transition: all 0.4s;
+  }
+  .forwho-card::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--gold), transparent);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.4s;
+  }
+  .forwho-card:hover::after { transform: scaleX(1); }
+  .forwho-card:hover { background: rgba(201,168,76,0.04); }
+  .forwho-emoji {
+    font-size: 2.5rem;
+    margin-bottom: 20px;
+    display: block;
+  }
+  .forwho-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin-bottom: 12px;
+  }
+  .forwho-text {
+    font-size: 0.88rem;
+    color: var(--text-dim);
+    line-height: 1.7;
+    font-weight: 300;
+  }
+
+  /* BENEFITS */
+  .benefits-section {
+    padding: 120px 0;
+    background: var(--surface);
+  }
+
+  .benefits-two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 80px;
+    align-items: start;
+    margin-top: 60px;
+  }
+  .benefits-left h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(2rem, 3.5vw, 3rem);
+    font-weight: 300;
+    line-height: 1.2;
+    margin-bottom: 32px;
+  }
+  .benefits-left h2 em { font-style: italic; color: var(--gold); }
+  .benefits-left p {
+    font-size: 0.95rem;
+    color: var(--text-dim);
+    line-height: 1.8;
+    font-weight: 300;
+    margin-bottom: 24px;
+  }
+  .benefits-right { display: flex; flex-direction: column; gap: 2px; }
+  .benefit-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 20px 24px;
+    background: var(--surface2);
+    border-left: 2px solid rgba(201,168,76,0.2);
+    transition: border-color 0.3s;
+  }
+  .benefit-item:hover { border-left-color: var(--gold); }
+  .benefit-check {
+    width: 20px;
+    height: 20px;
+    border: 1px solid var(--gold);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 1px;
+    color: var(--gold);
+    font-size: 0.6rem;
+  }
+  .benefit-text {
+    font-size: 0.9rem;
+    color: var(--text-dim);
+    line-height: 1.6;
+    font-weight: 300;
+  }
+  .benefit-text strong { color: var(--text); font-weight: 500; }
+
+  /* TESTIMONIALS */
+  .testimonials-section {
+    padding: 120px 0;
+    background: linear-gradient(to bottom, var(--surface), var(--deep));
+    overflow: hidden;
+  }
+
+  .testimonials-track {
+    display: flex;
+    gap: 24px;
+    margin-top: 60px;
+    animation: slideLeft 30s linear infinite;
+    width: max-content;
+  }
+  @keyframes slideLeft {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+  .testimonial-card {
+    width: 340px;
+    flex-shrink: 0;
+    background: var(--surface2);
+    border: 1px solid rgba(201,168,76,0.1);
+    padding: 36px;
+    position: relative;
+  }
+  .testimonial-card::before {
+    content: '"';
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 5rem;
+    color: rgba(201,168,76,0.15);
+    position: absolute;
+    top: -10px; left: 24px;
+    line-height: 1;
+  }
+  .testimonial-text {
+    font-size: 0.9rem;
+    color: var(--text-dim);
+    line-height: 1.75;
+    font-style: italic;
+    margin-bottom: 24px;
+    font-weight: 300;
+  }
+  .testimonial-author {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .author-avatar {
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--gold-dim), var(--gold));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.85rem;
+    color: var(--obsidian);
+  }
+  .author-name { font-size: 0.88rem; font-weight: 600; }
+  .author-role { font-size: 0.75rem; color: var(--text-muted); }
+
+  /* PRICING */
+  .pricing-section {
+    padding: 120px 0;
+    background: var(--deep);
+  }
+
+  .pricing-card-wrapper {
+    display: flex;
+    justify-content: center;
+    margin-top: 60px;
+  }
+  .pricing-card {
+    max-width: 560px;
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid rgba(201,168,76,0.2);
+    padding: 64px;
+    position: relative;
+    overflow: hidden;
+  }
+  .pricing-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  }
+  .pricing-glow {
+    position: absolute;
+    top: -100px; left: 50%;
+    transform: translateX(-50%);
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, rgba(201,168,76,0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .pricing-label {
+    font-size: 0.7rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 32px;
+    display: block;
+  }
+  .pricing-original {
+    font-size: 1.2rem;
+    color: var(--text-muted);
+    text-decoration: line-through;
+    margin-bottom: 8px;
+  }
+  .pricing-price {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 5rem;
+    font-weight: 700;
+    color: var(--gold);
+    line-height: 1;
+    margin-bottom: 8px;
+  }
+  .pricing-currency {
+    font-size: 1.5rem;
+    vertical-align: top;
+    margin-top: 16px;
+    display: inline-block;
+  }
+  .pricing-period { font-size: 0.9rem; color: var(--text-dim); margin-bottom: 40px; }
+  .pricing-features {
+    list-style: none;
+    margin-bottom: 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .pricing-features li {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 0.9rem;
+    color: var(--text-dim);
+    font-weight: 300;
+  }
+  .pricing-features li::before {
+    content: '◆';
+    color: var(--gold);
+    font-size: 0.45rem;
+    flex-shrink: 0;
+  }
+  .pricing-features li strong { color: var(--text); font-weight: 500; }
+
+  .btn-buy {
+    display: block;
+    width: 100%;
+    background: linear-gradient(135deg, var(--gold-light), var(--gold));
+    color: var(--obsidian);
+    padding: 18px;
+    font-weight: 700;
+    font-size: 0.9rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+    text-align: center;
+    transition: all 0.4s;
+  }
+  .btn-buy:hover { transform: translateY(-2px); box-shadow: 0 16px 50px rgba(201,168,76,0.3); }
+
+  .pricing-guarantee {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    letter-spacing: 0.05em;
+  }
+
+  /* FINAL CTA */
+  .final-cta {
+    padding: 160px 0;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    background: var(--obsidian);
+  }
+  .final-cta::before {
+    content: '';
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 800px; height: 600px;
+    background: radial-gradient(ellipse, rgba(201,168,76,0.06) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .final-cta h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(2.5rem, 5vw, 5rem);
+    font-weight: 300;
+    line-height: 1.1;
+    margin-bottom: 24px;
+    position: relative;
+  }
+  .final-cta h2 em { font-style: italic; color: var(--gold); }
+  .final-cta p {
+    font-size: 1rem;
+    color: var(--text-dim);
+    max-width: 480px;
+    margin: 0 auto 48px;
+    line-height: 1.7;
+    font-weight: 300;
+    position: relative;
+  }
+
+  /* FOOTER */
+  footer {
+    padding: 40px 60px;
+    border-top: 1px solid rgba(255,255,255,0.05);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--obsidian);
+  }
+  .footer-logo {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1rem;
+    color: var(--gold);
+    letter-spacing: 0.2em;
+    font-weight: 600;
+  }
+  .footer-text {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    letter-spacing: 0.05em;
+  }
+
+  /* ANIMATIONS */
+  @keyframes fadeDown {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Intersection observer animations */
+  .reveal {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.8s ease, transform 0.8s ease;
+  }
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .reveal-delay-1 { transition-delay: 0.1s; }
+  .reveal-delay-2 { transition-delay: 0.2s; }
+  .reveal-delay-3 { transition-delay: 0.3s; }
+  .reveal-delay-4 { transition-delay: 0.4s; }
+
+  /* RESPONSIVE */
+  @media (max-width: 900px) {
+    nav { padding: 20px 24px; }
+    .stats-band { gap: 40px; padding: 36px 24px; }
+    .section-container { padding: 0 24px; }
+    .promise-grid { grid-template-columns: 1fr; }
+    .forwho-grid { grid-template-columns: 1fr; }
+    .benefits-two-col { grid-template-columns: 1fr; gap: 40px; }
+    .module-row { grid-template-columns: 50px 1fr; padding: 20px 24px; }
+    .module-tag { display: none; }
+    .pricing-card { padding: 40px 28px; }
+    footer { flex-direction: column; gap: 16px; text-align: center; }
+  }
+</style>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">IA Académie</div>
+  <a href="#" class="nav-cta" onclick="openAccessModal();return false;">Accéder →</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-lines"></div>
+
+  <div class="hero-badge">Formation Premium · Accès Immédiat</div>
+  <p class="hero-eyebrow">Académie Digitale · Intelligence Artificielle</p>
+
+  <h1 class="hero-title">
+    Dominer<br>
+    <span class="line2">l'Intelligence Artificielle</span>
+  </h1>
+
+  <p class="hero-subtitle">
+    De zéro à expert pratique — Apprends l'IA, crée des produits digitaux,
+    vends et obtiens tes premiers clients avec un système complet et transformateur.
+  </p>
+
+  <div class="hero-actions">
+    <a href="#" class="btn-primary" onclick="openAccessModal();return false;"><span>Commencer maintenant</span></a>
+    <a href="#modules" class="btn-secondary">Voir la formation</a>
+  </div>
+
+  <div class="hero-scroll">
+    <div class="scroll-line"></div>
+    <span>Découvrir</span>
+  </div>
+</section>
+
+<!-- STATS -->
+<div class="stats-band">
+  <div class="stat-item">
+    <div class="stat-num">7</div>
+    <div class="stat-label">Modules complets</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-num">21+</div>
+    <div class="stat-label">Leçons audio</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-num">100%</div>
+    <div class="stat-label">Pratique & actionnable</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-num">∞</div>
+    <div class="stat-label">Accès à vie</div>
+  </div>
+</div>
+
+<!-- PROMISE -->
+<section class="promise-section">
+  <div class="section-container">
+    <div class="section-header reveal">
+      <span class="section-tag">La transformation</span>
+      <h2 class="section-title">Ce que cette formation <em>change</em> pour toi</h2>
+      <p class="section-desc">Pas de théorie inutile. Un chemin direct de zéro à résultats concrets.</p>
+    </div>
+
+    <div class="promise-grid">
+      <div class="promise-card reveal reveal-delay-1">
+        <span class="promise-num">01</span>
+        <span class="promise-icon">🧠</span>
+        <h3 class="promise-title">Comprendre & Maîtriser l'IA</h3>
+        <p class="promise-text">Tu passes de "je ne sais pas par où commencer" à quelqu'un qui utilise l'IA comme un outil de puissance chaque jour.</p>
+      </div>
+      <div class="promise-card reveal reveal-delay-2">
+        <span class="promise-num">02</span>
+        <span class="promise-icon">💡</span>
+        <h3 class="promise-title">Créer des Produits Digitaux</h3>
+        <p class="promise-text">eBooks, formations, plateformes, templates — tu apprends à transformer une idée en produit vendable en quelques jours.</p>
+      </div>
+      <div class="promise-card reveal reveal-delay-3">
+        <span class="promise-num">03</span>
+        <span class="promise-icon">🎯</span>
+        <h3 class="promise-title">Trouver tes Premiers Clients</h3>
+        <p class="promise-text">Une stratégie simple, directe et efficace pour prospecter, convaincre et faire ta première vente rapidement.</p>
+      </div>
+      <div class="promise-card reveal reveal-delay-4">
+        <span class="promise-num">04</span>
+        <span class="promise-icon">🏆</span>
+        <h3 class="promise-title">Obtenir ton Certificat</h3>
+        <p class="promise-text">À la fin du programme, tu passes l'examen et reçois un certificat premium imprimable — preuve de ta maîtrise.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MODULES -->
+<section class="modules-section" id="modules">
+  <div class="section-container">
+    <div class="section-header reveal">
+      <span class="section-tag">Programme complet</span>
+      <h2 class="section-title">7 Modules pour te <em>transformer</em></h2>
+      <p class="section-desc">Chaque module contient du texte, des audios de coaching, des exercices pratiques et des interactions.</p>
+    </div>
+
+    <div class="modules-list">
+      <div class="module-row reveal">
+        <div class="module-num">01</div>
+        <div class="module-info">
+          <h3>Comprendre l'Intelligence Artificielle</h3>
+          <p>Qu'est-ce que l'IA, pourquoi c'est une opportunité historique, comment l'utiliser intelligemment dès maintenant</p>
+        </div>
+        <div class="module-tag">3 Audios · Exercices</div>
+      </div>
+      <div class="module-row reveal">
+        <div class="module-num">02</div>
+        <div class="module-info">
+          <h3>Dominer les Outils IA</h3>
+          <p>Écriture, images, vidéos, voix, productivité — les meilleurs outils pour chaque objectif et comment les choisir</p>
+        </div>
+        <div class="module-tag">3 Audios · Exercices</div>
+      </div>
+      <div class="module-row reveal">
+        <div class="module-num">03</div>
+        <div class="module-info">
+          <h3>Créer un eBook avec l'IA</h3>
+          <p>De l'idée au PDF final — trouver ton sujet, écrire avec l'IA, corriger, mettre en page et publier</p>
+        </div>
+        <div class="module-tag">3 Audios · Exercices</div>
+      </div>
+      <div class="module-row reveal">
+        <div class="module-num">04</div>
+        <div class="module-info">
+          <h3>Créer un Produit Digital Complet</h3>
+          <p>Au-delà de l'eBook — packs, formations audio, templates, journaux, kits digitaux et produits premium</p>
+        </div>
+        <div class="module-tag">3 Audios · Exercices</div>
+      </div>
+      <div class="module-row reveal">
+        <div class="module-num">05</div>
+        <div class="module-info">
+          <h3>Créer ta Propre Plateforme Simple</h3>
+          <p>Comment transformer une idée en vraie plateforme hébergée, premium et professionnelle sans être développeur</p>
+        </div>
+        <div class="module-tag">3 Audios · Exercices</div>
+      </div>
+      <div class="module-row reveal">
+        <div class="module-num">06</div>
+        <div class="module-info">
+          <h3>Trouver tes Premiers Clients</h3>
+          <p>Prospection, message de vente, présentation d'offre, confiance — faire ta première vente étape par étape</p>
+        </div>
+        <div class="module-tag">3 Audios · Exercices</div>
+      </div>
+      <div class="module-row reveal">
+        <div class="module-num">07</div>
+        <div class="module-info">
+          <h3>Examen Final + Certificat Premium</h3>
+          <p>Valide tes connaissances et reçois un certificat d'excellence digne d'un produit haut de gamme</p>
+        </div>
+        <div class="module-tag">QCM · Diplôme</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOR WHO -->
+<section class="forwho-section">
+  <div class="section-container">
+    <div class="section-header reveal">
+      <span class="section-tag">Pour qui ?</span>
+      <h2 class="section-title">Cette formation est <em>faite pour toi</em> si…</h2>
+    </div>
+
+    <div class="forwho-grid">
+      <div class="forwho-card reveal reveal-delay-1">
+        <span class="forwho-emoji">🌱</span>
+        <h3 class="forwho-title">Tu débutes complètement</h3>
+        <p class="forwho-text">Pas besoin d'expérience technique. Cette formation part de zéro et t'emmène là où tu peux créer et vendre.</p>
+      </div>
+      <div class="forwho-card reveal reveal-delay-2">
+        <span class="forwho-emoji">🚀</span>
+        <h3 class="forwho-title">Tu veux lancer ton business</h3>
+        <p class="forwho-text">Tu as une idée mais tu ne sais pas comment la transformer en produit vendable. Ce système répond exactement à ça.</p>
+      </div>
+      <div class="forwho-card reveal reveal-delay-3">
+        <span class="forwho-emoji">💼</span>
+        <h3 class="forwho-title">Tu veux proposer tes services</h3>
+        <p class="forwho-text">Tu veux aider des entreprises ou des particuliers avec l'IA et créer une vraie source de revenus.</p>
+      </div>
+      <div class="forwho-card reveal reveal-delay-1">
+        <span class="forwho-emoji">📱</span>
+        <h3 class="forwho-title">Tu es créateur de contenu</h3>
+        <p class="forwho-text">Tu veux ajouter des produits digitaux à ton activité et monétiser ton savoir plus efficacement.</p>
+      </div>
+      <div class="forwho-card reveal reveal-delay-2">
+        <span class="forwho-emoji">🌍</span>
+        <h3 class="forwho-title">Tu es en Afrique francophone</h3>
+        <p class="forwho-text">Formation pensée pour les réalités du marché africain — outils accessibles, stratégies adaptées, prix inclusif.</p>
+      </div>
+      <div class="forwho-card reveal reveal-delay-3">
+        <span class="forwho-emoji">⚡</span>
+        <h3 class="forwho-title">Tu veux aller vite</h3>
+        <p class="forwho-text">Pas de blabla. Chaque module est direct, pratique et te donne quelque chose à faire immédiatement après.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- BENEFITS -->
+<section class="benefits-section">
+  <div class="section-container">
+    <div class="benefits-two-col">
+      <div class="benefits-left reveal">
+        <h2>Une valeur <em>immense</em><br>à un prix accessible</h2>
+        <p>
+          Cette formation a été conçue pour que même une personne qui n'a jamais touché à l'intelligence artificielle puisse en sortir avec un vrai produit, une vraie offre et une vraie stratégie.
+        </p>
+        <p>
+          Le prix est volontairement bas. Mais la qualité, la structure et les résultats sont de niveau premium. C'est notre engagement.
+        </p>
+        <a href="#" class="btn-primary" style="display: inline-block; margin-top: 8px;" onclick="openAccessModal();return false;"><span>Démarrer maintenant</span></a>
+      </div>
+      <div class="benefits-right reveal">
+        <div class="benefit-item">
+          <div class="benefit-check">✓</div>
+          <div class="benefit-text"><strong>7 modules complets</strong> avec texte structuré et exercices</div>
+        </div>
+        <div class="benefit-item">
+          <div class="benefit-check">✓</div>
+          <div class="benefit-text"><strong>21 leçons audio minimum</strong> pour écouter et apprendre en mobilité</div>
+        </div>
+        <div class="benefit-item">
+          <div class="benefit-check">✓</div>
+          <div class="benefit-text"><strong>Questions interactives</strong> pour ancrer les connaissances</div>
+        </div>
+        <div class="benefit-item">
+          <div class="benefit-check">✓</div>
+          <div class="benefit-text"><strong>Exercices pratiques</strong> dans chaque module</div>
+        </div>
+        <div class="benefit-item">
+          <div class="benefit-check">✓</div>
+          <div class="benefit-text"><strong>Examen final</strong> avec validation officielle</div>
+        </div>
+        <div class="benefit-item">
+          <div class="benefit-check">✓</div>
+          <div class="benefit-text"><strong>Certificat premium imprimable</strong> généré automatiquement</div>
+        </div>
+        <div class="benefit-item">
+          <div class="benefit-check">✓</div>
+          <div class="benefit-text"><strong>Accès à vie</strong> depuis n'importe quel appareil</div>
+        </div>
+        <div class="benefit-item">
+          <div class="benefit-check">✓</div>
+          <div class="benefit-text"><strong>Progression sauvegardée</strong> automatiquement</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section class="testimonials-section">
+  <div class="section-container">
+    <div class="section-header reveal">
+      <span class="section-tag">Ce qu'ils disent</span>
+      <h2 class="section-title">Des <em>résultats</em> réels</h2>
+    </div>
+  </div>
+
+  <div style="overflow: hidden; margin-top: 60px;">
+    <div class="testimonials-track">
+      <!-- Set 1 -->
+      <div class="testimonial-card">
+        <p class="testimonial-text">J'ai créé mon premier eBook en 3 jours après le module 3. Je l'ai vendu sur WhatsApp et j'ai gagné mes premières 15 000 FCFA.</p>
+        <div class="testimonial-author">
+          <div class="author-avatar">AM</div>
+          <div><div class="author-name">Amara M.</div><div class="author-role">Entrepreneur — Abidjan</div></div>
+        </div>
+      </div>
+      <div class="testimonial-card">
+        <p class="testimonial-text">Le module sur les outils IA m'a changé la vie. Je passe 10x moins de temps à créer du contenu et mes clients adorent le résultat.</p>
+        <div class="testimonial-author">
+          <div class="author-avatar">FK</div>
+          <div><div class="author-name">Fatou K.</div><div class="author-role">Créatrice de contenu — Dakar</div></div>
+        </div>
+      </div>
+      <div class="testimonial-card">
+        <p class="testimonial-text">Honnêtement, pour 5000 FCFA, c'est honteux. Cette formation vaut 10 fois plus. J'ai décroché mon premier contrat entreprise en 2 semaines.</p>
+        <div class="testimonial-author">
+          <div class="author-avatar">OD</div>
+          <div><div class="author-name">Olivier D.</div><div class="author-role">Freelance digital — Douala</div></div>
+        </div>
+      </div>
+      <div class="testimonial-card">
+        <p class="testimonial-text">Le diplôme est magnifique ! Mais surtout, les connaissances que j'ai acquises sont inestimables. Je recommande à 1000%.</p>
+        <div class="testimonial-author">
+          <div class="author-avatar">MN</div>
+          <div><div class="author-name">Marie N.</div><div class="author-role">Consultante — Lomé</div></div>
+        </div>
+      </div>
+      <div class="testimonial-card">
+        <p class="testimonial-text">J'avais peur de l'IA. Maintenant je l'utilise tous les jours pour mon travail. Le module 2 est une vraie mine d'or.</p>
+        <div class="testimonial-author">
+          <div class="author-avatar">IB</div>
+          <div><div class="author-name">Ibrahim B.</div><div class="author-role">Comptable freelance — Bamako</div></div>
+        </div>
+      </div>
+      <!-- Set 2 (duplicate for infinite loop) -->
+      <div class="testimonial-card">
+        <p class="testimonial-text">J'ai créé mon premier eBook en 3 jours après le module 3. Je l'ai vendu sur WhatsApp et j'ai gagné mes premières 15 000 FCFA.</p>
+        <div class="testimonial-author">
+          <div class="author-avatar">AM</div>
+          <div><div class="author-name">Amara M.</div><div class="author-role">Entrepreneur — Abidjan</div></div>
+        </div>
+      </div>
+      <div class="testimonial-card">
+        <p class="testimonial-text">Le module sur les outils IA m'a changé la vie. Je passe 10x moins de temps à créer du contenu et mes clients adorent le résultat.</p>
+        <div class="testimonial-author">
+          <div class="author-avatar">FK</div>
+          <div><div class="author-name">Fatou K.</div><div class="author-role">Créatrice de contenu — Dakar</div></div>
+        </div>
+      </div>
+      <div class="testimonial-card">
+        <p class="testimonial-text">Honnêtement, pour 5000 FCFA, c'est honteux. Cette formation vaut 10 fois plus. J'ai décroché mon premier contrat entreprise en 2 semaines.</p>
+        <div class="testimonial-author">
+          <div class="author-avatar">OD</div>
+          <div><div class="author-name">Olivier D.</div><div class="author-role">Freelance digital — Douala</div></div>
+        </div>
+      </div>
+      <div class="testimonial-card">
+        <p class="testimonial-text">Le diplôme est magnifique ! Mais surtout, les connaissances que j'ai acquises sont inestimables. Je recommande à 1000%.</p>
+        <div class="testimonial-author">
+          <div class="author-avatar">MN</div>
+          <div><div class="author-name">Marie N.</div><div class="author-role">Consultante — Lomé</div></div>
+        </div>
+      </div>
+      <div class="testimonial-card">
+        <p class="testimonial-text">J'avais peur de l'IA. Maintenant je l'utilise tous les jours pour mon travail. Le module 2 est une vraie mine d'or.</p>
+        <div class="testimonial-author">
+          <div class="author-avatar">IB</div>
+          <div><div class="author-name">Ibrahim B.</div><div class="author-role">Comptable freelance — Bamako</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section class="pricing-section" id="prix">
+  <div class="section-container">
+    <div class="section-header reveal">
+      <span class="section-tag">Investissement</span>
+      <h2 class="section-title">Un prix <em>accessible</em>, une valeur <em>immense</em></h2>
+      <p class="section-desc">Nous avons volontairement rendu cette formation accessible. Parce que tout le monde mérite les outils du futur.</p>
+    </div>
+
+    <div class="pricing-card-wrapper">
+      <div class="pricing-card reveal">
+        <div class="pricing-glow"></div>
+        <span class="pricing-label">⬥ Accès Complet — Offre de lancement</span>
+        <div class="pricing-original">Valeur estimée : 50 000 FCFA</div>
+        <div class="pricing-price">
+          <span class="pricing-currency">FCFA</span>5.000
+        </div>
+        <div class="pricing-period">— ou ~7,50 EUR · Paiement unique · Accès à vie</div>
+
+        <ul class="pricing-features">
+          <li><strong>7 modules complets</strong> + contenu premium</li>
+          <li><strong>21+ leçons audio</strong> de coaching</li>
+          <li><strong>Questions interactives</strong> & exercices</li>
+          <li><strong>Examen final</strong> de validation</li>
+          <li><strong>Certificat premium</strong> imprimable & téléchargeable</li>
+          <li><strong>Progression sauvegardée</strong> automatiquement</li>
+          <li><strong>Accès à vie</strong> — mises à jour incluses</li>
+          <li><strong>Compatible mobile & desktop</strong></li>
+        </ul>
+
+        <a href="#" class="btn-buy" onclick="openAccessModal();return false;">Accéder maintenant — 5.000 FCFA</a>
+        <p class="pricing-guarantee">🔒 Accès immédiat après paiement · Satisfait ou remboursé 7 jours</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="final-cta">
+  <div class="section-container">
+    <div class="reveal">
+      <h2>Le futur appartient<br>à ceux qui <em>dominent l'IA</em></h2>
+      <p>Ne laisse pas cette opportunité passer. Commence ta transformation aujourd'hui, avec les outils d'hier, les connaissances d'aujourd'hui et les résultats de demain.</p>
+      <a href="#" class="btn-primary" style="font-size: 1rem; padding: 20px 60px;" onclick="openAccessModal();return false;"><span>Je commence maintenant →</span></a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">IA Académie</div>
+  <div class="footer-text">© 2025 · Formation Premium · Tous droits réservés</div>
+</footer>
+
+<!-- ACCESS MODAL -->
+<div id="accessModal" style="
+  display:none;position:fixed;inset:0;z-index:10000;
+  background:rgba(0,0,0,0.85);backdrop-filter:blur(12px);
+  align-items:center;justify-content:center;
+">
+  <div style="
+    background:#0F0F18;border:1px solid rgba(201,168,76,0.25);
+    padding:52px 48px;max-width:460px;width:90%;position:relative;
+    animation:fadeModalIn 0.4s ease;
+  ">
+    <!-- Top gold line -->
+    <div style="position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,#C9A84C,transparent);"></div>
+    <!-- Close -->
+    <button onclick="closeAccessModal()" style="
+      position:absolute;top:16px;right:20px;background:none;border:none;
+      color:#5A5550;font-size:1.2rem;cursor:pointer;
+    ">✕</button>
+
+    <div style="text-align:center;margin-bottom:32px;">
+      <div style="font-size:2rem;margin-bottom:12px;">✦</div>
+      <h2 style="font-family:'Cormorant Garamond',serif;font-size:1.9rem;font-weight:300;margin-bottom:8px;">
+        Accès à la Formation
+      </h2>
+      <p style="font-size:0.85rem;color:#9A9280;line-height:1.6;font-weight:300;">
+        Entre ton code d'accès reçu après paiement pour accéder à la plateforme complète.
+      </p>
+    </div>
+
+    <input
+      type="text"
+      id="accessCodeInput"
+      placeholder="Ton code d'accès..."
+      style="
+        width:100%;background:#16161F;border:1px solid rgba(201,168,76,0.2);
+        padding:14px 18px;font-family:'Outfit',sans-serif;font-size:1rem;
+        color:#F0EDE8;outline:none;margin-bottom:10px;
+        letter-spacing:0.1em;text-align:center;text-transform:uppercase;
+      "
+      onkeydown="if(event.key==='Enter')checkCode()"
+    />
+    <div id="accessError" style="
+      font-size:0.8rem;color:#E74C3C;text-align:center;
+      min-height:20px;margin-bottom:12px;
+    "></div>
+
+    <button onclick="checkCode()" style="
+      width:100%;background:linear-gradient(135deg,#E8C97A,#C9A84C);
+      color:#050505;padding:15px;font-weight:700;font-size:0.88rem;
+      letter-spacing:0.15em;text-transform:uppercase;border:none;cursor:pointer;
+      transition:all 0.3s;
+    ">
+      Accéder à ma formation →
+    </button>
+
+    <p style="text-align:center;margin-top:20px;font-size:0.75rem;color:#5A5550;">
+      Pas encore de code ? <a href="#prix" onclick="closeAccessModal()" style="color:#C9A84C;text-decoration:none;">Voir le tarif →</a>
+    </p>
+  </div>
+</div>
+
+<style>
+@keyframes fadeModalIn {
+  from { opacity:0; transform:translateY(20px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+</style>
+
+<script>
+// Custom cursor
+const cursor = document.getElementById('cursor');
+const ring = document.getElementById('cursorRing');
+let mouseX = 0, mouseY = 0;
+let ringX = 0, ringY = 0;
+
+document.addEventListener('mousemove', e => {
+  mouseX = e.clientX;
+  mouseY = e.clientY;
+  cursor.style.left = mouseX - 4 + 'px';
+  cursor.style.top = mouseY - 4 + 'px';
+});
+
+function animateRing() {
+  ringX += (mouseX - ringX - 16) * 0.12;
+  ringY += (mouseY - ringY - 16) * 0.12;
+  ring.style.left = ringX + 'px';
+  ring.style.top = ringY + 'px';
+  requestAnimationFrame(animateRing);
+}
+animateRing();
+
+document.querySelectorAll('a, button').forEach(el => {
+  el.addEventListener('mouseenter', () => {
+    cursor.style.transform = 'scale(2.5)';
+    ring.style.width = '48px';
+    ring.style.height = '48px';
+  });
+  el.addEventListener('mouseleave', () => {
+    cursor.style.transform = 'scale(1)';
+    ring.style.width = '32px';
+    ring.style.height = '32px';
+  });
+});
+
+// Intersection observer for reveal animations
+const reveals = document.querySelectorAll('.reveal');
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('visible');
+    }
+  });
+}, { threshold: 0.1 });
+
+reveals.forEach(el => observer.observe(el));
+
+// === ACCESS MODAL ===
+const VALID_CODES = {
+  'IA2025':    'client',   // Code client standard
+  'AKOUA2026': 'admin',    // Code admin Prisca
+};
+
+function openAccessModal() {
+  const modal = document.getElementById('accessModal');
+  modal.style.display = 'flex';
+  setTimeout(() => document.getElementById('accessCodeInput').focus(), 100);
+}
+
+function closeAccessModal() {
+  document.getElementById('accessModal').style.display = 'none';
+  document.getElementById('accessError').textContent = '';
+  document.getElementById('accessCodeInput').value = '';
+}
+
+function checkCode() {
+  const input = document.getElementById('accessCodeInput').value.trim().toUpperCase();
+  const errorEl = document.getElementById('accessError');
+
+  if (!input) {
+    errorEl.textContent = '⚠ Entre ton code d\'accès.';
+    return;
+  }
+
+  if (VALID_CODES[input]) {
+    // Save access in sessionStorage so platform.html can verify
+    try { sessionStorage.setItem('ia_access', input); } catch(e){}
+    try { sessionStorage.setItem('ia_role', VALID_CODES[input]); } catch(e){}
+    errorEl.style.color = '#2ECC71';
+    errorEl.textContent = '✓ Code validé ! Redirection...';
+    setTimeout(() => { try { window.location.href = 'platform.html'; } catch(e){} }, 700);
+  } else {
+    errorEl.style.color = '#E74C3C';
+    errorEl.textContent = '✕ Code invalide. Vérifie ton code ou contacte le support.';
+    document.getElementById('accessCodeInput').style.borderColor = 'rgba(231,76,60,0.5)';
+    setTimeout(() => {
+      document.getElementById('accessCodeInput').style.borderColor = 'rgba(201,168,76,0.2)';
+    }, 2000);
+  }
+}
+
+// Close modal on backdrop click
+document.getElementById('accessModal').addEventListener('click', function(e) {
+  if (e.target === this) closeAccessModal();
+});
+</script>
+</body>
+</html>
